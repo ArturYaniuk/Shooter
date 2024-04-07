@@ -14,4 +14,16 @@ class SHOOTER_API UShooterAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	
+public:
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeUpdateAnimation(float DeltaTime) override;
+
+	UPROPERTY(BlueprintReadOnly)
+	class AShooterCharacter* ShooterCharacter;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	class UCharacterMovementComponent* ShooterCharacterMovement;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	float GroundSpeed;
 };
