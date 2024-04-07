@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "ShooterCharacter.generated.h"
 
 UCLASS()
@@ -12,18 +14,40 @@ class SHOOTER_API AShooterCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AShooterCharacter();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+protected:
+
+	void MoveForward(float Value);
+
+	void MoveRight(float Value);
+
+	UFUNCTION()
+	void StartSprint();
+
+	UFUNCTION()
+	void StopSprint();
+
+	UFUNCTION()
+	void StartJump();
+
+	UFUNCTION()
+	void StopJump();
+
+	UPROPERTY(EditAnywhere, Category = MovementSpeed)
+	float sprintSpeed;
+
+	UPROPERTY(EditAnywhere, Category = MovementSpeed)
+	float defaultSpeed;
+
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* ShooterCameraComponent;
+
+
+protected:
+	virtual void BeginPlay() override;
 };
