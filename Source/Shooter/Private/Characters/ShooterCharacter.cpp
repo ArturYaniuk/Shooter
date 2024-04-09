@@ -3,6 +3,8 @@
 
 #include "Characters/ShooterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Items/Item.h"
+#include "Items/Weapons/Weapon.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -48,6 +50,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AShooterCharacter::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AShooterCharacter::StopSprint);
+
+	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &AShooterCharacter::EKeyPressed);
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -89,4 +93,14 @@ void AShooterCharacter::StartSprint()
 void AShooterCharacter::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = defaultSpeed;
+}
+
+void AShooterCharacter::EKeyPressed()
+{
+	AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+	}
+
 }

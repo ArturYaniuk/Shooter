@@ -8,6 +8,8 @@
 #include "Components/CapsuleComponent.h"
 #include "ShooterCharacter.generated.h"
 
+class AItem;
+
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -21,6 +23,8 @@ public:
 
 
 protected:
+
+	virtual void BeginPlay() override;
 
 	void MoveForward(float Value);
 
@@ -47,7 +51,14 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* ShooterCameraComponent;
 
+	void EKeyPressed();
 
-protected:
-	virtual void BeginPlay() override;
+private:
+
+	UPROPERTY(VisibleInstanceOnly)
+	AItem* OverlappingItem;
+
+public:
+	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
+
 };
