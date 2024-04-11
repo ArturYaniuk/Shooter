@@ -25,5 +25,6 @@ void UShooterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	{
 		GroundSpeed = UKismetMathLibrary::VSizeXY(ShooterCharacterMovement->Velocity);
 		IsFalling = ShooterCharacterMovement->IsFalling();
+		CharacterState = ShooterCharacter->GetCharacterState();
 	}
 }

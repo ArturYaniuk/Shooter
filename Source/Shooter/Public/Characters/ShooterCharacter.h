@@ -6,9 +6,11 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CharacterTypes.h"
 #include "ShooterCharacter.generated.h"
 
 class AItem;
+
 
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
@@ -55,10 +57,12 @@ protected:
 
 private:
 
+	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
-
+	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
 };
