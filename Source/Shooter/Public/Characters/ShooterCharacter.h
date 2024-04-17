@@ -11,7 +11,6 @@
 
 class AItem;
 
-
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -65,4 +64,5 @@ private:
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
+
 };

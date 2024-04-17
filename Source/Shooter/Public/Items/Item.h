@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItemState.h"
 #include "Item.generated.h"
 
 class USphereComponent;
@@ -37,4 +38,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* Sphere;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ItemProperties", meta = (AllowPrivateAccess = "true"))
+	EItemState ItemState;
+public:
+	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 };
