@@ -42,4 +42,5 @@ private:
 	EItemState ItemState;
 public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
+	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
 };

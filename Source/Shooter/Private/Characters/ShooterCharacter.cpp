@@ -102,7 +102,7 @@ void AShooterCharacter::EKeyPressed()
 	{
 		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-		EItemState::EIS_Equipped;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 	}
 
 }

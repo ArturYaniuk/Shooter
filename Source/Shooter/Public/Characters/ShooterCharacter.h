@@ -52,6 +52,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* ShooterCameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
+	class AWeapon* EquippedWeapon;
+
 	void EKeyPressed();
 
 private:
