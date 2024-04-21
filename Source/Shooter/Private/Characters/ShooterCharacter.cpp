@@ -103,23 +103,24 @@ void AShooterCharacter::EKeyPressed()
 	{
 		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-		OverlappingItem->SetItemState(EItemState::EIS_Equipped);
-	}
-	if (OverlappingItem)
-	{
-		DropWeapon();
+		EquippedWeapon = OverlappingWeapon;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 	}
 }
 
 void AShooterCharacter::EKeyReleased()
 {
+	DropWeapon();
 }
 
 void AShooterCharacter::DropWeapon()
 {
-	if (OverlappingItem)
+	if (EquippedWeapon)
 	{
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
-		OverlappingItem->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		EquippedWeapon->SetItemState(EItemState::EIS_Pickup);
+		CharacterState = ECharacterState::ECS_Unequipped;
+
 	}
 }
