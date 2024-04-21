@@ -6,7 +6,10 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CharacterTypes.h"
 #include "ShooterCharacter.generated.h"
+
+class AItem;
 
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
@@ -21,6 +24,8 @@ public:
 
 
 protected:
+
+	virtual void BeginPlay() override;
 
 	void MoveForward(float Value);
 
@@ -48,6 +53,25 @@ protected:
 	UCameraComponent* ShooterCameraComponent;
 
 
-protected:
-	virtual void BeginPlay() override;
+	void EKeyPressed();
+	void EKeyReleased();
+
+	void DropWeapon();
+
+private:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
+
+	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
+	UPROPERTY(VisibleInstanceOnly)
+	AItem* OverlappingItem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class AWeapon* EquippedWeapon;
+
+public:
+	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
+	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
+
 };
