@@ -52,17 +52,23 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* ShooterCameraComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
-	class AWeapon* EquippedWeapon;
 
 	void EKeyPressed();
+	void EKeyReleased();
+
+	void DropWeapon();
 
 private:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
+
+	UPROPERTY(VisibleInstanceOnly)
+	AItem* EquippedWeapon;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }

@@ -26,7 +26,6 @@ AShooterCharacter::AShooterCharacter()
 void AShooterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AShooterCharacter::Tick(float DeltaTime)
@@ -52,6 +51,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AShooterCharacter::StopSprint);
 
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &AShooterCharacter::EKeyPressed);
+	PlayerInputComponent->BindAction("Equip", IE_Released, this, &AShooterCharacter::EKeyReleased);
+
 }
 
 void AShooterCharacter::MoveForward(float Value)
@@ -102,7 +103,23 @@ void AShooterCharacter::EKeyPressed()
 	{
 		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		OverlappingItem->SetItemState(EItemState::EIS_Equipped);
 	}
+	if (OverlappingItem)
+	{
+		DropWeapon();
+	}
+}
 
+void AShooterCharacter::EKeyReleased()
+{
+}
+
+void AShooterCharacter::DropWeapon()
+{
+	if (OverlappingItem)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		OverlappingItem->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+	}
 }

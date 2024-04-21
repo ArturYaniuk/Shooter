@@ -26,13 +26,47 @@ void AItem::BeginPlay()
 	
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
+	SetItemProperties(ItemState);
 }
+
+void AItem::SetItemProperties(EItemState State)
+{
+	switch (State)
+	{
+	case EItemState::EIS_Pickup:
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		Sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Sphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+		break;
+	case EItemState::EIS_Equipped:
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetVisibility(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+
 
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AItem::SetItemState(EItemState State)
+{
+		ItemState = State;
+		SetItemProperties(State);
 }
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

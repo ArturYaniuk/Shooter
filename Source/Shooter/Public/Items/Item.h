@@ -33,6 +33,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* ItemMesh;
 
+	void SetItemProperties(EItemState State);
+
 private:
 
 	UPROPERTY(VisibleAnywhere)
@@ -40,7 +42,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ItemProperties", meta = (AllowPrivateAccess = "true"))
 	EItemState ItemState;
+
 public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
-	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
+	void SetItemState(EItemState State);
+	FORCEINLINE UStaticMeshComponent* GetItemMesh() const { return ItemMesh; }
 };
