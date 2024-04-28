@@ -171,6 +171,17 @@ void AShooterCharacter::Attack()
 		{
 			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.f);
 			DrawDebugPoint(GetWorld(), FireHit.Location, 15.f, FColor::Red, false, 4.f);
+
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FireHit.Location);
+			}
+		}
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && HipFireMontage)
+		{
+			AnimInstance->Montage_Play(HipFireMontage);
+			AnimInstance->Montage_JumpToSection(FName("StartFire"));
 		}
 	
 	}
