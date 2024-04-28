@@ -5,6 +5,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Items/Item.h"
 #include "Items/Weapons/Weapon.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 AShooterCharacter::AShooterCharacter()
 {
@@ -52,6 +55,10 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &AShooterCharacter::EKeyPressed);
 	PlayerInputComponent->BindAction("Equip", IE_Released, this, &AShooterCharacter::EKeyReleased);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AShooterCharacter::DropWeapon);
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AShooterCharacter::Attack);
+
+
 
 }
 
@@ -98,19 +105,23 @@ void AShooterCharacter::StopSprint()
 
 void AShooterCharacter::EKeyPressed()
 {
-	AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
-	if (OverlappingWeapon)
+	if (!EquippedWeapon) 
 	{
-		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
-		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-		EquippedWeapon = OverlappingWeapon;
-		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
+			EquippedWeapon = OverlappingWeapon;
+			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		}
 	}
+	
 }
 
 void AShooterCharacter::EKeyReleased()
 {
-	DropWeapon();
+
 }
 
 void AShooterCharacter::DropWeapon()
@@ -119,8 +130,30 @@ void AShooterCharacter::DropWeapon()
 	{
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
-		EquippedWeapon->SetItemState(EItemState::EIS_Pickup);
+		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
 		CharacterState = ECharacterState::ECS_Unequipped;
+		EquippedWeapon->ThrowWeapon();
+		EquippedWeapon = nullptr;
+		
+	}
+}
 
+void AShooterCharacter::Attack()
+{
+	if (EquippedWeapon) {
+		if (FireSound)
+		{
+			UGameplayStatics::PlaySound2D(this, FireSound);
+		}
+		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+		if (BarrelSocket)
+		{
+			const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
+			if (MuzzleFlash) 
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
+			}
+		}
 	}
 }

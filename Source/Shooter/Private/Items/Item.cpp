@@ -34,23 +34,41 @@ void AItem::SetItemProperties(EItemState State)
 	switch (State)
 	{
 	case EItemState::EIS_Pickup:
-		ItemMesh->SetSimulatePhysics(true);
+
+		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetVisibility(true);
-		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-		ItemMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-		Sphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		Sphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
 		break;
 	case EItemState::EIS_Equipped:
+
 		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetVisibility(true);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+
+	case EItemState::EIS_Falling:
+
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		ItemMesh->SetSimulatePhysics(true);
+		ItemMesh->SetEnableGravity(true);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
 	}
 }
 
