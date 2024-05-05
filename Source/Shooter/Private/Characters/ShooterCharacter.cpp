@@ -24,6 +24,8 @@ AShooterCharacter::AShooterCharacter()
 
 	ShooterCameraComponent->bUsePawnControlRotation = true;
 
+	GetMesh()->SetupAttachment(ShooterCameraComponent);
+
 	sprintSpeed = 1200.0f;
 	defaultSpeed = 600.0f;
 }
