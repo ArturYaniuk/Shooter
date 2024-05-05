@@ -60,6 +60,8 @@ protected:
 
 	void Attack();
 
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
+
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
@@ -79,10 +81,13 @@ private:
 	class UParticleSystem* MuzzleFlash;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* HipFireMontage;
+	class UAnimMontage* HipFireMontage; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BeamParticles;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
