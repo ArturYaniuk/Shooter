@@ -11,7 +11,8 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocetName)
 
 AWeapon::AWeapon():
 	ThrowWeaponTime(0.7f),
-	bFalling(false)
+	bFalling(false),
+	Ammo(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -61,4 +62,16 @@ void AWeapon::StopFalling()
 {
 	bFalling = false;
 	SetItemState(EItemState::EIS_Pickup);
+}
+
+void AWeapon::DecrementAmmo()
+{
+	if (Ammo - 1 <= 0)
+	{
+		Ammo = 0;
+	}
+	else
+	{
+		--Ammo;
+	}
 }

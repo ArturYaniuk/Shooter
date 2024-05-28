@@ -7,6 +7,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "CharacterTypes.h"
+#include "AmmoType.h"
+#include "CombatState.h"
 #include "ShooterCharacter.generated.h"
 
 class AItem;
@@ -58,7 +60,7 @@ protected:
 
 	void DropWeapon();
 
-	void Attack();
+	void FireWeapon();
 
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 
@@ -69,6 +71,17 @@ protected:
 
 	UFUNCTION()
 	void AutoFireReset();
+
+	void InitializeAmmoMap();
+
+	bool WeaponHasAmmo();
+
+	void PlayFireSound();
+
+	void SendBullet();
+
+	void PlayGunFireMontage();
+
 
 private:
 
@@ -104,6 +117,18 @@ private:
 	float AutomaticFireRate;
 
 	FTimerHandle AutoFireTimer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 Starting9mmAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 StartingARAmmo;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
