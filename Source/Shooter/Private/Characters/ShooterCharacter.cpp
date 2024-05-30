@@ -17,6 +17,8 @@ AShooterCharacter::AShooterCharacter() :
 	bFireButtonPressed(false),
 	Starting9mmAmmo(85),
 	StartingARAmmo(120),
+	sprintSpeed(1200.0f),
+	defaultSpeed(600.0f),
 	CombatState(ECombatState::ECS_Unoccupied)
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -31,9 +33,6 @@ AShooterCharacter::AShooterCharacter() :
 	ShooterCameraComponent->bUsePawnControlRotation = true;
 
 	GetMesh()->SetupAttachment(ShooterCameraComponent);
-
-	sprintSpeed = 1200.0f;
-	defaultSpeed = 600.0f;
 }
 
 void AShooterCharacter::BeginPlay()
