@@ -33,7 +33,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* ItemMesh;
 
-	void SetItemProperties(EItemState State);
+	virtual void SetItemProperties(EItemState State);
 
 private:
 
@@ -48,6 +48,7 @@ private:
 
 
 public:
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return Sphere; }
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
