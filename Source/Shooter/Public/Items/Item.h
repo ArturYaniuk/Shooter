@@ -33,7 +33,7 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* ItemMesh;
 
-	void SetItemProperties(EItemState State);
+	virtual void SetItemProperties(EItemState State);
 
 private:
 
@@ -46,9 +46,19 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	FString ItemName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	int32 ItemCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* PickupWidget;
+
+
 
 public:
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return Sphere; }
+	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 };

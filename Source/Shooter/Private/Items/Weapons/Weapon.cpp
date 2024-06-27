@@ -7,6 +7,7 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocetName)
 {
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocetName);
+
 }
 
 AWeapon::AWeapon() :

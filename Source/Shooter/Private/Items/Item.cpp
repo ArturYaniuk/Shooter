@@ -3,18 +3,23 @@
 
 #include "Items/Item.h"
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Characters/ShooterCharacter.h"
 
 // Sets default values
 AItem::AItem() :
 	ItemState(EItemState::EIS_Pickup),
-	ItemName(FString("Default"))
+	ItemName(FString("Default")),
+	ItemCount(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	ItemMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ItemMeshComponent"));
 	RootComponent = ItemMesh;
+
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
+	PickupWidget->SetupAttachment(GetRootComponent());
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(GetRootComponent());
@@ -24,7 +29,10 @@ AItem::AItem() :
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(false);
+	}
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 	SetItemProperties(ItemState);
@@ -49,6 +57,7 @@ void AItem::SetItemProperties(EItemState State)
 		break;
 	case EItemState::EIS_Equipped:
 
+		PickupWidget->SetVisibility(false);
 		ItemMesh->SetSimulatePhysics(false);
 		ItemMesh->SetEnableGravity(false);
 		ItemMesh->SetVisibility(true);
@@ -94,6 +103,7 @@ void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Ot
 	if (ShooterCharacter)
 	{
 		ShooterCharacter->SetOverlappingItem(this);
+		ShooterCharacter->IncrementOverlappedItemCount(1);
 	}
 }
 
@@ -103,5 +113,7 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	if (ShooterCharacter)
 	{
 		ShooterCharacter->SetOverlappingItem(nullptr);
+		ShooterCharacter->IncrementOverlappedItemCount(-1);
+
 	}
 }
