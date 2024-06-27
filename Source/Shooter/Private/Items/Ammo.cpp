@@ -3,6 +3,7 @@
 
 #include "Items/Ammo.h"
 
+#include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 
 AAmmo::AAmmo()
@@ -11,6 +12,8 @@ AAmmo::AAmmo()
 	SetRootComponent(AmmoMesh);
 
 	GetAreaSphere()->SetupAttachment(GetRootComponent());
+	GetPickupWidget()->SetupAttachment(GetRootComponent());
+
 }
 
 void AAmmo::Tick(float DeltaTime)

@@ -10,6 +10,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Items/Ammo.h"
 
 AShooterCharacter::AShooterCharacter() :
 	AutomaticFireRate(0.1f),
@@ -19,6 +20,8 @@ AShooterCharacter::AShooterCharacter() :
 	StartingARAmmo(120),
 	sprintSpeed(1200.0f),
 	defaultSpeed(600.0f),
+	bShouldTraceForItems(false),
+	OverlappedItemCount(0),
 	CombatState(ECombatState::ECS_Unoccupied)
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -78,6 +81,20 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 }
 
+void AShooterCharacter::IncrementOverlappedItemCount(int8 Amount)
+{
+	if (OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+	}
+	else
+	{
+		OverlappedItemCount += Amount;
+		bShouldTraceForItems = true;
+	}
+}
+
 void AShooterCharacter::MoveForward(float Value)
 {
 	if (Controller && (Value != 0.f))
@@ -131,6 +148,13 @@ void AShooterCharacter::EKeyPressed()
 			EquippedWeapon = OverlappingWeapon;
 			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 		}
+	}
+
+	auto Ammo = Cast<AAmmo>(OverlappingItem);
+
+	if (Ammo)
+	{
+		PickupAmmo(Ammo);
 	}
 	
 }
@@ -377,4 +401,24 @@ bool AShooterCharacter::CarringAmmo()
 	}
 
 	return false;
+}
+
+void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
+{
+	if (AmmoMap.Find(Ammo->GetAmmoType()))
+	{
+		int32 AmmoCount{ AmmoMap[Ammo->GetAmmoType()] };
+		AmmoCount += Ammo->GetItemCount();
+		AmmoMap[Ammo->GetAmmoType()] = AmmoCount;
+	}
+	if (EquippedWeapon->GetAmmoType() == Ammo->GetAmmoType())
+	{
+		//Check to see if the gun is empty
+		if (EquippedWeapon->GetAmmo() == 0)
+		{
+			ReloadWeapon();
+		}
+		
+	}
+	Ammo->Destroy();
 }

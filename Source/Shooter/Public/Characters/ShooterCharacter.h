@@ -23,6 +23,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void IncrementOverlappedItemCount(int8 Amount);
 
 
 protected:
@@ -87,6 +88,8 @@ protected:
 
 	bool CarringAmmo();
 
+	void PickupAmmo(class AAmmo* Ammo);
+
 
 private:
 
@@ -137,6 +140,11 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ReloadMontage;
+
+	bool bShouldTraceForItems;
+
+	/** Number of overlapped AItems */
+	int8 OverlappedItemCount;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
