@@ -138,25 +138,7 @@ void AShooterCharacter::StopSprint()
 
 void AShooterCharacter::EKeyPressed()
 {
-	if (!EquippedWeapon) 
-	{
-		AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
-		if (OverlappingWeapon)
-		{
-			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
-			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-			EquippedWeapon = OverlappingWeapon;
-			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-		}
-	}
-
-	auto Ammo = Cast<AAmmo>(OverlappingItem);
-
-	if (Ammo)
-	{
-		PickupAmmo(Ammo);
-	}
-	
+	GetPickupItem(OverlappingItem);
 }
 
 void AShooterCharacter::EKeyReleased()
@@ -421,4 +403,27 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 		
 	}
 	Ammo->Destroy();
+}
+
+void AShooterCharacter::GetPickupItem(AItem* Item)
+{
+	if (!EquippedWeapon)
+	{
+		AWeapon* OverlappingWeapon = Cast<AWeapon>(Item);
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
+			EquippedWeapon = OverlappingWeapon;
+			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		}
+	}
+
+	auto Ammo = Cast<AAmmo>(Item);
+
+	if (Ammo)
+	{
+		PickupAmmo(Ammo);
+	}
+
 }

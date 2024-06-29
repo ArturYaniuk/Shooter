@@ -25,6 +25,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void IncrementOverlappedItemCount(int8 Amount);
 
+	void PickupAmmo(class AAmmo* Ammo);
+
+	void GetPickupItem(AItem* Item);
 
 protected:
 
@@ -88,7 +91,6 @@ protected:
 
 	bool CarringAmmo();
 
-	void PickupAmmo(class AAmmo* Ammo);
 
 
 private:
