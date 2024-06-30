@@ -5,6 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Characters/ShooterCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AItem::AItem() :
@@ -84,6 +86,7 @@ void AItem::SetItemProperties(EItemState State)
 
 
 
+
 // Called every frame
 void AItem::Tick(float DeltaTime)
 {
@@ -114,6 +117,26 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		ShooterCharacter->SetOverlappingItem(nullptr);
 		ShooterCharacter->IncrementOverlappedItemCount(-1);
+	}
+}
 
+
+void AItem::PlayEquipSound()
+{
+	
+
+	if (Character)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
+		if (Character->ShouldPlayEquipSound())
+		{
+			
+			Character->StartEquipSoundTimer();
+			if (EquipSound)
+			{
+				UGameplayStatics::PlaySound2D(this, EquipSound);
+				
+			}
+		}
 	}
 }

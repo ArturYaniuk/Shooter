@@ -22,7 +22,9 @@ AShooterCharacter::AShooterCharacter() :
 	defaultSpeed(600.0f),
 	bShouldTraceForItems(false),
 	OverlappedItemCount(0),
-	CombatState(ECombatState::ECS_Unoccupied)
+	CombatState(ECombatState::ECS_Unoccupied),
+	bShouldPlayEquipSound(true),
+	EquipSoundResetTime(0.2f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -138,7 +140,10 @@ void AShooterCharacter::StopSprint()
 
 void AShooterCharacter::EKeyPressed()
 {
-	GetPickupItem(OverlappingItem);
+	if (!EquippedWeapon)
+	{
+		GetPickupItem(OverlappingItem);
+	}
 }
 
 void AShooterCharacter::EKeyReleased()
@@ -385,6 +390,18 @@ bool AShooterCharacter::CarringAmmo()
 	return false;
 }
 
+void AShooterCharacter::ResetEquipSoundTimer()
+{
+	bShouldPlayEquipSound = true;
+}
+
+void AShooterCharacter::StartEquipSoundTimer()
+{
+	bShouldPlayEquipSound = false;
+	GetWorldTimerManager().SetTimer(EquipSoundTimer, this, &AShooterCharacter::ResetEquipSoundTimer, EquipSoundResetTime);
+
+}
+
 void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 {
 	if (AmmoMap.Find(Ammo->GetAmmoType()))
@@ -407,17 +424,17 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
-	if (!EquippedWeapon)
+	Item->PlayEquipSound();
+
+	AWeapon* OverlappingWeapon = Cast<AWeapon>(Item);
+	if (OverlappingWeapon)
 	{
-		AWeapon* OverlappingWeapon = Cast<AWeapon>(Item);
-		if (OverlappingWeapon)
-		{
-			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
-			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-			EquippedWeapon = OverlappingWeapon;
-			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-		}
+		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
+		EquippedWeapon = OverlappingWeapon;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 	}
+
 
 	auto Ammo = Cast<AAmmo>(Item);
 

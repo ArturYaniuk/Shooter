@@ -75,10 +75,10 @@ void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 {	
 	if (OtherActor)
 	{
-		auto Character = Cast<AShooterCharacter>(OtherActor);
-		if (Character)
+		auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+		if (ShooterCharacter)
 		{
-			Character->GetPickupItem(this);
+			ShooterCharacter->GetPickupItem(this);
 		}
 	}
 }

@@ -148,8 +148,21 @@ private:
 	/** Number of overlapped AItems */
 	int8 OverlappedItemCount;
 
+	FTimerHandle EquipSoundTimer;
+
+	bool bShouldPlayEquipSound;
+
+	void ResetEquipSoundTimer();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float EquipSoundResetTime;
+
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
+	
+	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
+
+	void StartEquipSoundTimer();
 
 };
