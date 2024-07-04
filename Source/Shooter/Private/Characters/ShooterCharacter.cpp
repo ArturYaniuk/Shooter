@@ -424,8 +424,6 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
-	Item->PlayEquipSound();
-
 	AWeapon* OverlappingWeapon = Cast<AWeapon>(Item);
 	if (OverlappingWeapon)
 	{
@@ -433,14 +431,19 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
 		EquippedWeapon = OverlappingWeapon;
 		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		Item->PlayEquipSound(this);
 	}
 
 
 	auto Ammo = Cast<AAmmo>(Item);
-
-	if (Ammo)
+	if (EquippedWeapon)
 	{
-		PickupAmmo(Ammo);
+		if (Ammo)
+			{
+				PickupAmmo(Ammo);
+				Item->PlayEquipSound(this);
+			}
 	}
+	
 
 }

@@ -121,13 +121,12 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 }
 
 
-void AItem::PlayEquipSound()
+void AItem::PlayEquipSound(AShooterCharacter* Char)
 {
+	Character = Char;
 	
-
 	if (Character)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Some debug message!"));
 		if (Character->ShouldPlayEquipSound())
 		{
 			

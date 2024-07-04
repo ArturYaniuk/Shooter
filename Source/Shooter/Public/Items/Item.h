@@ -21,7 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	
-	void PlayEquipSound();
+	void PlayEquipSound(class AShooterCharacter* Char);
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,7 +41,7 @@ protected:
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
-	class AShooterCharacter* Character;
+	AShooterCharacter* Character;
 
 	UPROPERTY(VisibleAnywhere)
 	USphereComponent* Sphere;
