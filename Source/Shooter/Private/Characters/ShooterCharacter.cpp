@@ -22,7 +22,9 @@ AShooterCharacter::AShooterCharacter() :
 	defaultSpeed(600.0f),
 	bShouldTraceForItems(false),
 	OverlappedItemCount(0),
-	CombatState(ECombatState::ECS_Unoccupied)
+	CombatState(ECombatState::ECS_Unoccupied),
+	bShouldPlayEquipSound(true),
+	EquipSoundResetTime(0.2f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -138,25 +140,10 @@ void AShooterCharacter::StopSprint()
 
 void AShooterCharacter::EKeyPressed()
 {
-	if (!EquippedWeapon) 
+	if (!EquippedWeapon)
 	{
-		AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
-		if (OverlappingWeapon)
-		{
-			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
-			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-			EquippedWeapon = OverlappingWeapon;
-			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-		}
+		GetPickupItem(OverlappingItem);
 	}
-
-	auto Ammo = Cast<AAmmo>(OverlappingItem);
-
-	if (Ammo)
-	{
-		PickupAmmo(Ammo);
-	}
-	
 }
 
 void AShooterCharacter::EKeyReleased()
@@ -403,6 +390,18 @@ bool AShooterCharacter::CarringAmmo()
 	return false;
 }
 
+void AShooterCharacter::ResetEquipSoundTimer()
+{
+	bShouldPlayEquipSound = true;
+}
+
+void AShooterCharacter::StartEquipSoundTimer()
+{
+	bShouldPlayEquipSound = false;
+	GetWorldTimerManager().SetTimer(EquipSoundTimer, this, &AShooterCharacter::ResetEquipSoundTimer, EquipSoundResetTime);
+
+}
+
 void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 {
 	if (AmmoMap.Find(Ammo->GetAmmoType()))
@@ -421,4 +420,30 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 		
 	}
 	Ammo->Destroy();
+}
+
+void AShooterCharacter::GetPickupItem(AItem* Item)
+{
+	AWeapon* OverlappingWeapon = Cast<AWeapon>(Item);
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
+		EquippedWeapon = OverlappingWeapon;
+		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+		Item->PlayEquipSound(this);
+	}
+
+
+	auto Ammo = Cast<AAmmo>(Item);
+	if (EquippedWeapon)
+	{
+		if (Ammo)
+			{
+				PickupAmmo(Ammo);
+				Item->PlayEquipSound(this);
+			}
+	}
+	
+
 }

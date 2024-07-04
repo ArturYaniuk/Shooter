@@ -25,6 +25,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void IncrementOverlappedItemCount(int8 Amount);
 
+	void PickupAmmo(class AAmmo* Ammo);
+
+	void GetPickupItem(AItem* Item);
 
 protected:
 
@@ -88,7 +91,6 @@ protected:
 
 	bool CarringAmmo();
 
-	void PickupAmmo(class AAmmo* Ammo);
 
 
 private:
@@ -146,8 +148,21 @@ private:
 	/** Number of overlapped AItems */
 	int8 OverlappedItemCount;
 
+	FTimerHandle EquipSoundTimer;
+
+	bool bShouldPlayEquipSound;
+
+	void ResetEquipSoundTimer();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	float EquipSoundResetTime;
+
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
+	
+	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
+
+	void StartEquipSoundTimer();
 
 };
