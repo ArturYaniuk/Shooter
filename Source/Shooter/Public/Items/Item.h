@@ -61,10 +61,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class USoundCue* EquipSound;
 
-	
-
-
-
 public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return Sphere; }
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
