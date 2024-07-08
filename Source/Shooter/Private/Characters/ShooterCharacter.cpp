@@ -450,16 +450,19 @@ void AShooterCharacter::TraceForItems()
 		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
 		if (ItemTraceResult.bBlockingHit)
 		{
+
 			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 			}
+
 			if (TraceHitItemLastFrame)
 			{
 				if (TraceHitItem != TraceHitItemLastFrame)
 				{
-					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(true);
+					
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
 				}
 			}
 			TraceHitItemLastFrame = TraceHitItem;
