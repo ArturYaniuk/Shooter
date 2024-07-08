@@ -25,6 +25,8 @@ AItem::AItem() :
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(GetRootComponent());
+	Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	Sphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
 // Called when the game starts or when spawned

@@ -10,6 +10,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Items/Ammo.h"
 
 AShooterCharacter::AShooterCharacter() :
@@ -50,6 +51,8 @@ void AShooterCharacter::BeginPlay()
 void AShooterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	TraceForItems();
 
 }
 
@@ -140,7 +143,7 @@ void AShooterCharacter::StopSprint()
 
 void AShooterCharacter::EKeyPressed()
 {
-	if (!EquippedWeapon)
+	if (TraceHitItem)
 	{
 		GetPickupItem(OverlappingItem);
 	}
@@ -149,6 +152,10 @@ void AShooterCharacter::EKeyPressed()
 void AShooterCharacter::EKeyReleased()
 {
 
+}
+
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
 }
 
 void AShooterCharacter::DropWeapon()
@@ -390,6 +397,80 @@ bool AShooterCharacter::CarringAmmo()
 	return false;
 }
 
+void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
+{
+	DropWeapon();
+	GetPickupItem(WeaponToSwap);
+	TraceHitItem = nullptr;
+	TraceHitItemLastFrame = nullptr;
+}
+
+bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
+{
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrossHairWorldDirection;
+
+	//Get world position and direction of crosshairs
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0), 
+		CrosshairLocation, 
+		CrosshairWorldPosition, 
+		CrossHairWorldDirection);
+
+	if (bScreenToWorld)
+	{
+		const FVector Start{ CrosshairWorldPosition };
+		const FVector End{ Start + CrossHairWorldDirection * 50'000.f };
+		OutHitLocation = End;
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		if (OutHitResult.bBlockingHit)
+		{
+			OutHitLocation = OutHitResult.Location;
+			return true;
+		}
+	}
+	return false;
+}
+
+void AShooterCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
+		if (ItemTraceResult.bBlockingHit)
+		{
+			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (TraceHitItem && TraceHitItem->GetPickupWidget())
+			{
+				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+			}
+			if (TraceHitItemLastFrame)
+			{
+				if (TraceHitItem != TraceHitItemLastFrame)
+				{
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(true);
+				}
+			}
+			TraceHitItemLastFrame = TraceHitItem;
+		}
+	}
+	else if (TraceHitItemLastFrame)
+	{
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
 void AShooterCharacter::ResetEquipSoundTimer()
 {
 	bShouldPlayEquipSound = true;
@@ -425,12 +506,20 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 void AShooterCharacter::GetPickupItem(AItem* Item)
 {
 	AWeapon* OverlappingWeapon = Cast<AWeapon>(Item);
+
 	if (OverlappingWeapon)
-	{
-		OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
-		CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
-		EquippedWeapon = OverlappingWeapon;
-		EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+	{	
+		if (EquippedWeapon)
+		{
+			SwapWeapon(OverlappingWeapon);
+		}
+		else {
+			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
+			EquippedWeapon = OverlappingWeapon;
+			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+	
+		}
 		Item->PlayEquipSound(this);
 	}
 

@@ -12,6 +12,7 @@
 #include "ShooterCharacter.generated.h"
 
 class AItem;
+class AWeapon;
 
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
@@ -62,6 +63,8 @@ protected:
 	void EKeyPressed();
 	void EKeyReleased();
 
+	void EquipWeapon(AWeapon* WeaponToEquip);
+
 	void DropWeapon();
 
 	void FireWeapon();
@@ -91,6 +94,12 @@ protected:
 
 	bool CarringAmmo();
 
+	void SwapWeapon(AWeapon* WeaponToSwap);
+
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
+
+	void TraceForItems();
+
 
 
 private:
@@ -103,7 +112,7 @@ private:
 	AItem* OverlappingItem;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class AWeapon* EquippedWeapon;
+	AWeapon* EquippedWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* FireSound;
@@ -156,6 +165,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	float EquipSoundResetTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	class AItem* TraceHitItemLastFrame;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
