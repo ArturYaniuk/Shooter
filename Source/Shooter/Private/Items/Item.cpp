@@ -12,7 +12,8 @@
 AItem::AItem() :
 	ItemState(EItemState::EIS_Pickup),
 	ItemName(FString("Default")),
-	ItemCount(0)
+	ItemCount(0),
+	SlotIndex(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -79,6 +80,19 @@ void AItem::SetItemProperties(EItemState State)
 		ItemMesh->SetEnableGravity(true);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+
+	case EItemState::EIS_PickedUp:
+
+		PickupWidget->SetVisibility(false);
+		ItemMesh->SetSimulatePhysics(false);
+		ItemMesh->SetEnableGravity(false);
+		ItemMesh->SetVisibility(false);
+		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		Sphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);

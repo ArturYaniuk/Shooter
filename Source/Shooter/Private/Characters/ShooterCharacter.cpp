@@ -512,16 +512,51 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 
 	if (OverlappingWeapon)
 	{	
-		if (EquippedWeapon)
+		
+		if (!EquippedWeapon && Inventory.Num() < INVENTORY_CAPACITY)
 		{
-			SwapWeapon(OverlappingWeapon);
-		}
-		else {
+			Inventory.Add(OverlappingWeapon);
 			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 			CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
 			EquippedWeapon = OverlappingWeapon;
 			EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-	
+			OverlappingWeapon->SetSlotIndex(Inventory.Num());
+			if (EquippedWeapon == nullptr)
+			{
+				// -1 == no EquippedWeapon yet. No need to reverse the icon animation
+				EquipItemDelegate.Broadcast(-1, OverlappingWeapon->GetSlotIndex());
+			}
+			else
+			{
+				EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), OverlappingWeapon->GetSlotIndex());
+			}
+
+		}
+		
+		else if ((Inventory.Num() + 1) < INVENTORY_CAPACITY)
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Cyan, FString::Printf(TEXT("Inv. num: %i"), Inventory.Num()));
+			}
+			OverlappingWeapon->SetSlotIndex(Inventory.Num());
+			Inventory.Add(OverlappingWeapon);
+			TraceHitItem->SetItemState(EItemState::EIS_PickedUp);
+
+			if (EquippedWeapon == nullptr)
+			{
+				// -1 == no EquippedWeapon yet. No need to reverse the icon animation
+				EquipItemDelegate.Broadcast(-1, OverlappingWeapon->GetSlotIndex());
+			}
+			else
+			{
+				EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), OverlappingWeapon->GetSlotIndex());
+			}
+		}
+		else {
+
+			SwapWeapon(OverlappingWeapon);
+			
 		}
 		Item->PlayEquipSound(this);
 	}
