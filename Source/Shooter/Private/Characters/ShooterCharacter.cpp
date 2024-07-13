@@ -147,6 +147,8 @@ void AShooterCharacter::StopSprint()
 
 void AShooterCharacter::EKeyPressed()
 {
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+
 	if (TraceHitItem)
 	{
 		GetPickupItem(OverlappingItem);
@@ -544,7 +546,7 @@ void AShooterCharacter::SixKeyPressed()
 
 void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex)
 {
-	if ((CurrentItemIndex == NewItemIndex) || (NewItemIndex >= Inventory.Num())) return;
+	if ((CurrentItemIndex == NewItemIndex) || (NewItemIndex >= Inventory.Num()) || CombatState != ECombatState::ECS_Unoccupied) return;
 	auto OldEquippedWeapon = EquippedWeapon;
 	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
 	EquipWeapon(NewWeapon);
@@ -601,7 +603,7 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 		{
 			OverlappingWeapon->SetSlotIndex(Inventory.Num());
 			Inventory.Add(OverlappingWeapon);
-			TraceHitItem->SetItemState(EItemState::EIS_PickedUp);
+			OverlappingWeapon->SetItemState(EItemState::EIS_PickedUp);
 		}
 		else {
 
