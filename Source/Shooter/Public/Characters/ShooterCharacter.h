@@ -14,6 +14,8 @@
 class AItem;
 class AWeapon;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipItemDelegate, int32, CurrentSlotIndex, int32, NewSlotIndex);
+
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -63,8 +65,6 @@ protected:
 	void EKeyPressed();
 	void EKeyReleased();
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
-
 	void DropWeapon();
 
 	void FireWeapon();
@@ -100,6 +100,16 @@ protected:
 
 	void TraceForItems();
 
+	void EquipWeapon(AWeapon* WeaponToSwap);
+
+	void OneKeyPressed();
+	void TwoKeyPressed();
+	void ThreeKeyPressed();
+	void FourKeyPressed();
+	void FiveKeyPressed();
+	void SixKeyPressed();
+
+	void ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex);
 
 
 private:
@@ -172,10 +182,18 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	class AItem* TraceHitItemLastFrame;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
+	TArray<AItem*> Inventory;
+
+	const int32 INVENTORY_CAPACITY{ 6 };
+
+	UPROPERTY(BlueprintAssignable,  Category = Delegates, meta = (AllowPrivateAccess = "true"))
+	FEquipItemDelegate EquipItemDelegate;
+
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
-	
+	FORCEINLINE void SetCharacterState(ECharacterState State) { CharacterState = State; }
 	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
 
 	void StartEquipSoundTimer();

@@ -6,6 +6,7 @@
 #include "Items/Item.h"
 #include "WeaponType.h"
 #include "AmmoType.h"
+#include "Characters/CharacterTypes.h"
 #include "Weapon.generated.h"
 
 /**
