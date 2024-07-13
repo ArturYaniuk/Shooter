@@ -65,8 +65,6 @@ protected:
 	void EKeyPressed();
 	void EKeyReleased();
 
-	void EquipWeapon(AWeapon* WeaponToEquip);
-
 	void DropWeapon();
 
 	void FireWeapon();
@@ -102,6 +100,16 @@ protected:
 
 	void TraceForItems();
 
+	void EquipWeapon(AWeapon* WeaponToSwap);
+
+	void OneKeyPressed();
+	void TwoKeyPressed();
+	void ThreeKeyPressed();
+	void FourKeyPressed();
+	void FiveKeyPressed();
+	void SixKeyPressed();
+
+	void ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex);
 
 
 private:
