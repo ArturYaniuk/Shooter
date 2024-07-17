@@ -25,6 +25,7 @@ void UShooterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	{
 		GroundSpeed = UKismetMathLibrary::VSizeXY(ShooterCharacterMovement->Velocity);
 		IsFalling = ShooterCharacterMovement->IsFalling();
+		bEquipping = ShooterCharacter->GetCombatState() == ECombatState::ECS_Equipping;
 		CharacterState = ShooterCharacter->GetCharacterState();
 	}
 }
