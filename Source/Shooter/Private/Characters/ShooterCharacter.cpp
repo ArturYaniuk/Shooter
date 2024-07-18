@@ -14,7 +14,7 @@
 #include "Items/Ammo.h"
 
 AShooterCharacter::AShooterCharacter() :
-	AutomaticFireRate(0.1f),
+	AutomaticFireRate(0.02f),
 	bShouldFire(true),
 	bFireButtonPressed(false),
 	Starting9mmAmmo(85),
@@ -184,13 +184,13 @@ void AShooterCharacter::DropWeapon()
 {
 	if (EquippedWeapon)
 	{
+		if (EquippedWeapon->GetItemState() == EItemState::EIS_Falling || EquippedWeapon->GetItemState() == EItemState::EIS_Pickup) return;
 		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
 		CharacterState = ECharacterState::ECS_Unequipped;
 		EquippedWeapon->ThrowWeapon();
 		Inventory.Remove(EquippedWeapon);
-		EquippedWeapon = nullptr;
 
 	}
 }
@@ -406,6 +406,11 @@ void AShooterCharacter::FinishReloading()
 	}
 }
 
+void AShooterCharacter::FinishEquipping()
+{
+	CombatState = ECombatState::ECS_Unoccupied;
+}
+
 bool AShooterCharacter::CarringAmmo()
 {
 	if (EquippedWeapon == nullptr) return false;
@@ -551,8 +556,20 @@ void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewI
 	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
 	EquipWeapon(NewWeapon);
 
+	if (OldEquippedWeapon->GetItemState() == EItemState::EIS_Pickup || NewWeapon->GetItemState() == EItemState::EIS_Pickup) return;
+
 	OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
 	NewWeapon->SetItemState(EItemState::EIS_Equipped);
+
+	CombatState = ECombatState::ECS_Equipping;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && EquipMontage)
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+		AnimInstance->Montage_JumpToSection(FName("Equip"));
+	}
+	NewWeapon->PlayEquipSound(this, true);
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()

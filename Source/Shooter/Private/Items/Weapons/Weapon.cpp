@@ -11,7 +11,7 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocetName)
 }
 
 AWeapon::AWeapon() :
-	ThrowWeaponTime(0.7f),
+	ThrowWeaponTime(1.7f),
 	bFalling(false),
 	Ammo(30),
 	MagazineCapacity(30),
@@ -25,12 +25,6 @@ AWeapon::AWeapon() :
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (GetItemState() == EItemState::EIS_Falling && bFalling)
-	{
-		const FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw,0.f };
-		GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
-	}
 }
 
 void AWeapon::ReloadAmmo(int32 Amount)
@@ -51,17 +45,12 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 
 void AWeapon::ThrowWeapon()
 {
-	FRotator MeshRotation{ 0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f };
-	GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
-
 	const FVector MeshForward{ GetItemMesh()->GetForwardVector() };
 	const FVector MeshRight{ GetItemMesh()->GetRightVector() };
 
 	FVector ImpulseDirection = MeshRight.RotateAngleAxis(-20.f, MeshForward);
-
-	float RandomRotation{ FMath::FRandRange(10.f,30.f) };
-	ImpulseDirection = ImpulseDirection.RotateAngleAxis(RandomRotation, FVector(0.f, 0.f, 1.f));
-	ImpulseDirection *= 2'000.f;
+	
+	ImpulseDirection *= 1'000.f;
 
 	GetItemMesh()->AddImpulse(ImpulseDirection);
 

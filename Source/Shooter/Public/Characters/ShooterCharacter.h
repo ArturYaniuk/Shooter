@@ -89,9 +89,6 @@ protected:
 	void ReloadButtonPressed();
 	void ReloadWeapon();
 
-	UFUNCTION(BlueprintCallable)
-	void FinishReloading();
-
 	bool CarringAmmo();
 
 	void SwapWeapon(AWeapon* WeaponToSwap);
@@ -162,7 +159,16 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ReloadMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* EquipMontage;
+
 	bool bShouldTraceForItems;
+
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
 
 	/** Number of overlapped AItems */
 	int8 OverlappedItemCount;
@@ -195,6 +201,7 @@ public:
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState State) { CharacterState = State; }
 	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
+	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
 
 	void StartEquipSoundTimer();
 

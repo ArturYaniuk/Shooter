@@ -21,7 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	
-	void PlayEquipSound(class AShooterCharacter* Char);
+	void PlayEquipSound(class AShooterCharacter* Char, bool bForcePlaySound = false);
 
 protected:
 	// Called when the game starts or when spawned
