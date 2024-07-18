@@ -138,15 +138,23 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 }
 
 
-void AItem::PlayEquipSound(AShooterCharacter* Char)
+void AItem::PlayEquipSound(AShooterCharacter* Char, bool bForcePlaySound)
 {
 	Character = Char;
 	
 	if (Character)
 	{
-		if (Character->ShouldPlayEquipSound())
+		if (bForcePlaySound)
 		{
-			
+			Character->StartEquipSoundTimer();
+			if (EquipSound)
+			{
+				UGameplayStatics::PlaySound2D(this, EquipSound);
+
+			}
+		}
+		else if (Character->ShouldPlayEquipSound())
+		{
 			Character->StartEquipSoundTimer();
 			if (EquipSound)
 			{

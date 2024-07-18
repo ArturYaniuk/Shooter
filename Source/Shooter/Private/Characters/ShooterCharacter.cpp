@@ -566,9 +566,10 @@ void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewI
 
 	if (AnimInstance && EquipMontage)
 	{
-		AnimInstance->Montage_Play(EquipMontage, 1.0f);
+		AnimInstance->Montage_Play(EquipMontage);
 		AnimInstance->Montage_JumpToSection(FName("Equip"));
 	}
+	NewWeapon->PlayEquipSound(this, true);
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()
