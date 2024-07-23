@@ -87,7 +87,7 @@ protected:
 	void PlayGunFireMontage();
 
 	void ReloadButtonPressed();
-	void ReloadWeapon();
+	void ReloadWeapon(AWeapon* Weapon, bool pocketReload = false);
 
 	bool CarringAmmo();
 
@@ -165,7 +165,7 @@ private:
 	bool bShouldTraceForItems;
 
 	UFUNCTION(BlueprintCallable)
-	void FinishReloading();
+	void FinishReloading(AWeapon* Weapon);
 
 	UFUNCTION(BlueprintCallable)
 	void FinishEquipping();
@@ -195,6 +195,12 @@ private:
 
 	UPROPERTY(BlueprintAssignable,  Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FEquipItemDelegate EquipItemDelegate;
+
+	FTimerHandle isPocketReloading;
+
+	void StartPocketReload();
+
+	AWeapon* OldEquippedWeapon;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
