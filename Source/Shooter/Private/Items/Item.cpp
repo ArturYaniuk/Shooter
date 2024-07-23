@@ -13,7 +13,8 @@ AItem::AItem() :
 	ItemState(EItemState::EIS_Pickup),
 	ItemName(FString("Default")),
 	ItemCount(0),
-	SlotIndex(0)
+	SlotIndex(0),
+	bCharacterInventoryFull(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

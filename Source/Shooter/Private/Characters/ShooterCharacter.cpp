@@ -289,7 +289,7 @@ void AShooterCharacter::AutoFireReset()
 	}
 	else
 	{
-		ReloadWeapon();
+		ReloadWeapon(EquippedWeapon);
 	}
 }
 
@@ -355,51 +355,60 @@ void AShooterCharacter::PlayGunFireMontage()
 
 void AShooterCharacter::ReloadButtonPressed()
 {
-	ReloadWeapon();
+	ReloadWeapon(EquippedWeapon);
 }
 
-void AShooterCharacter::ReloadWeapon()
+void AShooterCharacter::ReloadWeapon(AWeapon* Weapon,bool pocketReload)
 {
-	if (CombatState != ECombatState::ECS_Unoccupied) return;
-	if (EquippedWeapon == nullptr) return;
-	
-	if (CarringAmmo()) 
+	if (Weapon == nullptr) return;
+	if (pocketReload)
 	{
-		CombatState = ECombatState::ECS_Reloading;
-
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-		if (AnimInstance && ReloadMontage)
-		{
-			AnimInstance->Montage_Play(ReloadMontage);
-			AnimInstance->Montage_JumpToSection(EquippedWeapon->GetReloadMontageSection());
-		}
+		GetWorldTimerManager().SetTimer(isPocketReloading, this, &AShooterCharacter::StartPocketReload, 1.0f);
 	}
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	
+	if (!pocketReload)
+	{
+		if (CarringAmmo()) 
+			{
+				CombatState = ECombatState::ECS_Reloading;
+
+				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+				if (AnimInstance && ReloadMontage)
+				{
+					AnimInstance->Montage_Play(ReloadMontage);
+					AnimInstance->Montage_JumpToSection(Weapon->GetReloadMontageSection());
+				}
+			}
+	}
+	
+	
 }
 
-void AShooterCharacter::FinishReloading()
+void AShooterCharacter::FinishReloading(AWeapon* Weapon)
 {
 	CombatState = ECombatState::ECS_Unoccupied;
-	if (EquippedWeapon == nullptr) return;
-	const auto AmmoType{ EquippedWeapon->GetAmmoType() };
+	if (Weapon == nullptr) return;
+	const auto AmmoType{ Weapon->GetAmmoType() };
 
 	if (AmmoMap.Contains(AmmoType))
 	{
 		int32 CarriedAmmo = AmmoMap[AmmoType];
 
-		const int32 MagEmptySpace = EquippedWeapon->GetMagazineCapacity() - EquippedWeapon->GetAmmo();
+		const int32 MagEmptySpace = Weapon->GetMagazineCapacity() - Weapon->GetAmmo();
 
 		if (MagEmptySpace > CarriedAmmo)
 		{
 			// reload the magazine with all the ammo we are carrying
-			EquippedWeapon->ReloadAmmo(CarriedAmmo);
+			Weapon->ReloadAmmo(CarriedAmmo);
 			CarriedAmmo = 0;
 			AmmoMap.Add(AmmoType, CarriedAmmo);
 		}
 		else
 		{
 			// fill the magazine
-			EquippedWeapon->ReloadAmmo(MagEmptySpace);
+			Weapon->ReloadAmmo(MagEmptySpace);
 			CarriedAmmo -= MagEmptySpace;
 			AmmoMap.Add(AmmoType, CarriedAmmo);
 		}
@@ -494,6 +503,15 @@ void AShooterCharacter::TraceForItems()
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+
+				if (Inventory.Num() >= INVENTORY_CAPACITY)
+				{
+					TraceHitItem->SetCharacterInventoryFull(true);
+				}
+				else
+				{
+					TraceHitItem->SetCharacterInventoryFull(false);
+				}
 			}
 
 			if (TraceHitItemLastFrame)
@@ -552,7 +570,7 @@ void AShooterCharacter::SixKeyPressed()
 void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex)
 {
 	if ((CurrentItemIndex == NewItemIndex) || (NewItemIndex >= Inventory.Num()) || CombatState != ECombatState::ECS_Unoccupied) return;
-	auto OldEquippedWeapon = EquippedWeapon;
+	OldEquippedWeapon = EquippedWeapon;
 	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
 	EquipWeapon(NewWeapon);
 
@@ -570,11 +588,21 @@ void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewI
 		AnimInstance->Montage_JumpToSection(FName("Equip"));
 	}
 	NewWeapon->PlayEquipSound(this, true);
+	ReloadWeapon(OldEquippedWeapon, true);
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()
 {
 	bShouldPlayEquipSound = true;
+}
+
+void AShooterCharacter::StartPocketReload()
+{
+	if (OldEquippedWeapon)
+	{
+		FinishReloading(OldEquippedWeapon);
+	}
+	
 }
 
 void AShooterCharacter::StartEquipSoundTimer()
@@ -597,7 +625,7 @@ void AShooterCharacter::PickupAmmo(AAmmo* Ammo)
 		//Check to see if the gun is empty
 		if (EquippedWeapon->GetAmmo() == 0)
 		{
-			ReloadWeapon();
+			ReloadWeapon(EquippedWeapon);
 		}
 		
 	}
