@@ -64,6 +64,37 @@ void AWeapon::StopFalling()
 	SetItemState(EItemState::EIS_Pickup);
 }
 
+void AWeapon::OnConstruction(const FTransform& Transform)
+{
+	const FString WeaponTablePath{ TEXT("/Script/Engine.DataTable'/Game/DataTable/WeaponDataTable.WeaponDataTable'") };
+	UDataTable* WeaponTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *WeaponTablePath));
+
+	if (WeaponTableObject)
+	{
+		FWeaponDataTable* WeaponDataRow = nullptr;
+		switch (WeaponType)
+		{
+		case EWeaponType::EWT_SubmachineGun:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("SubmachineGun"), TEXT(""));
+			break;
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssaultRifle"), TEXT(""));
+			break;
+		}
+		if (WeaponDataRow)
+		{
+			AmmoType = WeaponDataRow->AmmoType;
+			Ammo = WeaponDataRow->WeaponAmmo;
+			MagazineCapacity = WeaponDataRow->MagazinCapacity;
+			SetEquipSound(WeaponDataRow->EquipSound);
+			GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
+			SetItemName(WeaponDataRow->ItemName);
+
+		}
+	}
+
+}
+
 void AWeapon::DecrementAmmo()
 {
 	if (Ammo - 1 <= 0)

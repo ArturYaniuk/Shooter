@@ -74,6 +74,8 @@ public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE void SetEquipSound(USoundCue* NewSound) { EquipSound = NewSound; }
+	FORCEINLINE void SetItemName(FString Name) { ItemName = Name; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 	FORCEINLINE int32 GetSlotIndex() const { return SlotIndex; }
 	FORCEINLINE void SetSlotIndex(int32 Index) { SlotIndex = Index; }
