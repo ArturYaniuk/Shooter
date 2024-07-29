@@ -208,6 +208,7 @@ public:
 	FORCEINLINE void SetCharacterState(ECharacterState State) { CharacterState = State; }
 	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
 	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
+	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 
 	void StartEquipSoundTimer();
 
