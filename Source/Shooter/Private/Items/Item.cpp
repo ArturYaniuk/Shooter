@@ -42,6 +42,7 @@ void AItem::BeginPlay()
 	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
 	Sphere->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 	SetItemProperties(ItemState);
+	
 }
 
 void AItem::SetItemProperties(EItemState State)

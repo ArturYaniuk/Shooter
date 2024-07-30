@@ -33,7 +33,8 @@ struct FWeaponDataTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString ItemName;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ECharacterState CharacterAnimState;
 };
 /**
  * 
@@ -60,6 +61,8 @@ public:
 	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
 
 	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
+
+	FORCEINLINE ECharacterState GetWDCharacterState() const { return WDCharacterState; }
 
 	void ReloadAmmo(int32 Amount);
 
@@ -96,4 +99,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	UDataTable* WeaponDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	ECharacterState WDCharacterState;
+
 };

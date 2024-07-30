@@ -3,6 +3,7 @@
 
 #include "Items/Weapons/Weapon.h"
 
+
 void AWeapon::Equip(USceneComponent* InParent, FName InSocetName)
 {
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
@@ -89,7 +90,8 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			SetEquipSound(WeaponDataRow->EquipSound);
 			GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
 			SetItemName(WeaponDataRow->ItemName);
-
+			WDCharacterState = WeaponDataRow->CharacterAnimState;
+			
 		}
 	}
 

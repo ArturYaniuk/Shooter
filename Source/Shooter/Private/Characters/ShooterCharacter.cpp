@@ -24,6 +24,7 @@ AShooterCharacter::AShooterCharacter() :
 	bShouldTraceForItems(false),
 	OverlappedItemCount(0),
 	CombatState(ECombatState::ECS_Unoccupied),
+	CharacterState(ECharacterState::ECS_Unequipped),
 	bShouldPlayEquipSound(true),
 	EquipSoundResetTime(0.2f)
 {
@@ -172,8 +173,8 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 	{
 		EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
 	}
+	CharacterState = WeaponToEquip->GetWDCharacterState();
 	WeaponToEquip->Equip(GetMesh(), FName("RightHandSocket"));
-	CharacterState = ECharacterState::ECS_EquipedFirstWeapon;
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 
@@ -589,6 +590,7 @@ void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewI
 	}
 	NewWeapon->PlayEquipSound(this, true);
 	ReloadWeapon(OldEquippedWeapon, true);
+	CharacterState = NewWeapon->GetWDCharacterState();
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()

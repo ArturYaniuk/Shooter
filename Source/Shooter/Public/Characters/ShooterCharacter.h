@@ -113,7 +113,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
 
-	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+	ECharacterState CharacterState;
 
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
@@ -203,6 +203,7 @@ private:
 	AWeapon* OldEquippedWeapon;
 
 public:
+
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState State) { CharacterState = State; }
