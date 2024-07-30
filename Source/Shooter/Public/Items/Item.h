@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ItemState.h"
+#include "Characters/ShooterCharacter.h"
 #include "Item.generated.h"
 
 class USphereComponent;
@@ -64,7 +65,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
 	int32 SlotIndex;
 
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
 	bool bCharacterInventoryFull;
 
@@ -74,8 +74,11 @@ public:
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
+	FORCEINLINE void SetEquipSound(USoundCue* NewSound) { EquipSound = NewSound; }
+	FORCEINLINE void SetItemName(FString Name) { ItemName = Name; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 	FORCEINLINE int32 GetSlotIndex() const { return SlotIndex; }
 	FORCEINLINE void SetSlotIndex(int32 Index) { SlotIndex = Index; }
 	FORCEINLINE void SetCharacterInventoryFull(bool bFull) { bCharacterInventoryFull = bFull; }
+	FORCEINLINE AShooterCharacter* GetShooterCharacter() const { return Character; }
 };

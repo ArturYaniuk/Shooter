@@ -7,8 +7,35 @@
 #include "WeaponType.h"
 #include "AmmoType.h"
 #include "Characters/CharacterTypes.h"
+#include "Engine/DataTable.h"
 #include "Weapon.generated.h"
 
+USTRUCT(BlueprintType)
+struct FWeaponDataTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EAmmoType AmmoType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 WeaponAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 MagazinCapacity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USoundCue* EquipSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMesh* ItemMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ECharacterState CharacterAnimState;
+};
 /**
  * 
  */
@@ -35,6 +62,8 @@ public:
 
 	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
 
+	FORCEINLINE ECharacterState GetWDCharacterState() const { return WDCharacterState; }
+
 	void ReloadAmmo(int32 Amount);
 
 protected:
@@ -45,6 +74,7 @@ protected:
 
 	void StopFalling();
 	
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 private:
 	FTimerHandle ThrowWeaponTimer;
@@ -66,4 +96,11 @@ private:
 	// FName for the Reload Montage Section
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	FName ReloadMontageSection;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UDataTable* WeaponDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	ECharacterState WDCharacterState;
+
 };
