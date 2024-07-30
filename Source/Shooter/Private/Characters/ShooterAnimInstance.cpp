@@ -9,6 +9,12 @@
 #include "../Public/Items/Weapons/WeaponType.h"
 
 
+UShooterAnimInstance::UShooterAnimInstance() :
+	EquippedWeaponType(EWeaponType::ECS_MAX),
+	bShoodUseFABRIK(false)
+{
+}
+
 void UShooterAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
@@ -32,6 +38,8 @@ void UShooterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 			IsFalling = ShooterCharacterMovement->IsFalling();
 
 		}
+		bShoodUseFABRIK = ShooterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied || ShooterCharacter->GetCombatState() == ECombatState::ECS_FireTimerInProgress;
+
 		bEquipping = ShooterCharacter->GetCombatState() == ECombatState::ECS_Equipping;
 		CharacterState = ShooterCharacter->GetCharacterState();
 		if (ShooterCharacter->GetEquippedWeapon())

@@ -17,6 +17,7 @@ class SHOOTER_API UShooterAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 public:
+	UShooterAnimInstance();
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
@@ -40,5 +41,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	EWeaponType EquippedWeaponType;
+
+	//True when not reloading or equipping
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bShoodUseFABRIK;
 
 };
