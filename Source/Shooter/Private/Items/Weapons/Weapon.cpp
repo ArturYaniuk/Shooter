@@ -19,7 +19,7 @@ AWeapon::AWeapon() :
 	WeaponType(EWeaponType::EWT_SubmachineGun),
 	AmmoType(EAmmoType::EAT_9mm),
 	ReloadMontageSection(FName(TEXT("Reload"))),
-	ClipBoneName(TEXT("DefaultName"))
+	ClipBoneName(TEXT("b_gun_mag"))
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -92,8 +92,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
 			SetItemName(WeaponDataRow->ItemName);
 			WDCharacterState = WeaponDataRow->CharacterAnimState;
-			SetClipBoneName(ClipBoneName);
-			
+			SetClipBoneName(WeaponDataRow->ClipBoneName);
+			SetReloadMontageSection(WeaponDataRow->ReloadMontageSection);
+			GetItemMesh()->SetAnimInstanceClass(WeaponDataRow->AnimBP);
 		}
 	}
 
