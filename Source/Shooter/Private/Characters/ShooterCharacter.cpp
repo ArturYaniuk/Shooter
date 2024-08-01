@@ -40,6 +40,9 @@ AShooterCharacter::AShooterCharacter() :
 	ShooterCameraComponent->bUsePawnControlRotation = true;
 
 	GetMesh()->SetupAttachment(ShooterCameraComponent);
+
+	//Create Hand Scene Component
+	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 }
 
 void AShooterCharacter::BeginPlay()
@@ -591,6 +594,30 @@ void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewI
 	NewWeapon->PlayEquipSound(this, true);
 	ReloadWeapon(OldEquippedWeapon, true);
 	CharacterState = NewWeapon->GetWDCharacterState();
+}
+
+void AShooterCharacter::GrabClip()
+{
+	if (EquippedWeapon == nullptr) return;
+	if (HandSceneComponent == nullptr) return;
+
+	int32 ClipBoneIndex{ EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName()) };
+	
+	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("b_LeftHand")));
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	EquippedWeapon->SetMovingClip(true);
+
+
+
+}
+
+void AShooterCharacter::ReleaseClip()
+{
+	EquippedWeapon->SetMovingClip(false);
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()
