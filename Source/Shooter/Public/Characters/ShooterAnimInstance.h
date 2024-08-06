@@ -34,6 +34,9 @@ public:
 	bool IsFalling;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bAiming;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bEquipping;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Movement | Character State")

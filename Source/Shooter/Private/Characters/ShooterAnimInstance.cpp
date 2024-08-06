@@ -32,6 +32,8 @@ void UShooterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	
 	if (ShooterCharacter)
 	{
+		bAiming = ShooterCharacter->GetAiming();
+
 		if (ShooterCharacterMovement)
 		{
 			GroundSpeed = UKismetMathLibrary::VSizeXY(ShooterCharacterMovement->Velocity);

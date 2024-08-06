@@ -4,6 +4,8 @@
 #include "Characters/ShooterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Items/Item.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Items/Weapons/Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -16,8 +18,13 @@
 AShooterCharacter::AShooterCharacter() :
 	bShouldFire(true),
 	bFireButtonPressed(false),
+	CameraDefaultFOV(0.f),
+	CameraZoomedFOV(60.f),
+	CameraCurrentFOV(0.f),
+	ZoomInterpSpeed(0.f),
 	Starting9mmAmmo(85),
 	StartingARAmmo(120),
+	bAiming(false),
 	sprintSpeed(1200.0f),
 	defaultSpeed(600.0f),
 	bShouldTraceForItems(false),
@@ -37,8 +44,9 @@ AShooterCharacter::AShooterCharacter() :
 	ShooterCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
 
 	ShooterCameraComponent->bUsePawnControlRotation = true;
+	ShooterCameraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("b_rootSocket")));
 
-	GetMesh()->SetupAttachment(ShooterCameraComponent);
+
 
 	//Create Hand Scene Component
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
@@ -49,6 +57,11 @@ void AShooterCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	InitializeAmmoMap();
+	if (ShooterCameraComponent)
+	{
+		CameraDefaultFOV = GetShooterCameraComponent()->FieldOfView;
+		CameraCurrentFOV = CameraCurrentFOV;
+	}
 }
 
 void AShooterCharacter::Tick(float DeltaTime)
@@ -56,7 +69,7 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TraceForItems();
-
+	CameraInterpZoom(DeltaTime);
 }
 
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -71,6 +84,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AShooterCharacter::StartJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AShooterCharacter::StopJump);
+
+	PlayerInputComponent->BindAction("AimingButton", IE_Pressed, this, &AShooterCharacter::AimingButtonPressed);
+	PlayerInputComponent->BindAction("AimingButton", IE_Released, this, &AShooterCharacter::AimigButtonReleased);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AShooterCharacter::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AShooterCharacter::StopSprint);
@@ -212,6 +228,30 @@ void AShooterCharacter::FireWeapon()
 
 		StartFireTimer();
 	}
+}
+
+void AShooterCharacter::AimingButtonPressed()
+{
+	bAiming = true;
+}
+
+void AShooterCharacter::AimigButtonReleased()
+{
+	bAiming = false;
+}
+
+void AShooterCharacter::CameraInterpZoom(float DeltaTime)
+{
+	//Set Current camera field of view
+	if (bAiming)
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	else
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	GetShooterCameraComponent()->SetFieldOfView(CameraCurrentFOV);
 }
 
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)

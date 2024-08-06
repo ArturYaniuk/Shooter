@@ -58,16 +58,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = MovementSpeed)
 	float defaultSpeed;
 
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* ShooterCameraComponent;
-
-
 	void EKeyPressed();
 	void EKeyReleased();
 
 	void DropWeapon();
 
 	void FireWeapon();
+
+	void AimingButtonPressed();
+	void AimigButtonReleased();
+
+	void CameraInterpZoom(float DeltaTime);
 
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 
@@ -117,7 +118,10 @@ protected:
 
 private:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combate", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* ShooterCameraComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 
 	ECharacterState CharacterState;
 
@@ -136,11 +140,23 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	bool bFireButtonPressed;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	bool bShouldFire;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	bool bAiming;
 
+	float CameraDefaultFOV;
+
+	float CameraZoomedFOV;
+
+	float CameraCurrentFOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float ZoomInterpSpeed;
 
 	FTimerHandle AutoFireTimer;
 
@@ -211,6 +227,8 @@ private:
 
 public:
 
+	FORCEINLINE UCameraComponent* GetShooterCameraComponent() const { return ShooterCameraComponent; }
+	FORCEINLINE bool GetAiming() const { return bAiming; }
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState State) { CharacterState = State; }
