@@ -52,12 +52,6 @@ protected:
 	UFUNCTION()
 	void StopJump();
 
-	UPROPERTY(EditAnywhere, Category = MovementSpeed)
-	float sprintSpeed;
-
-	UPROPERTY(EditAnywhere, Category = MovementSpeed)
-	float defaultSpeed;
-
 	void EKeyPressed();
 	void EKeyReleased();
 
@@ -69,6 +63,8 @@ protected:
 	void AimigButtonReleased();
 
 	void CameraInterpZoom(float DeltaTime);
+
+	void ChangeSpeed();
 
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 
@@ -125,6 +121,14 @@ private:
 
 	ECharacterState CharacterState;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float SprintSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float DefaultSpeed;
+
+	float CurrentSpeed;
+
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
@@ -146,8 +150,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	bool bShouldFire;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+	bool bSprinting;
 
 	float CameraDefaultFOV;
 
@@ -157,6 +164,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float ZoomInterpSpeed;
+
+
+
 
 	FTimerHandle AutoFireTimer;
 

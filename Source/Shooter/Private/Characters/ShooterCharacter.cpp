@@ -20,13 +20,15 @@ AShooterCharacter::AShooterCharacter() :
 	bFireButtonPressed(false),
 	CameraDefaultFOV(0.f),
 	CameraZoomedFOV(60.f),
+	bSprinting(false),
 	CameraCurrentFOV(0.f),
 	ZoomInterpSpeed(0.f),
 	Starting9mmAmmo(85),
 	StartingARAmmo(120),
 	bAiming(false),
-	sprintSpeed(1200.0f),
-	defaultSpeed(600.0f),
+	SprintSpeed(1200.0f),
+	DefaultSpeed(600.0f),
+	CurrentSpeed(600.0f),
 	bShouldTraceForItems(false),
 	OverlappedItemCount(0),
 	CombatState(ECombatState::ECS_Unoccupied),
@@ -70,6 +72,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 
 	TraceForItems();
 	CameraInterpZoom(DeltaTime);
+	ChangeSpeed();
+
 }
 
 void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -156,12 +160,12 @@ void AShooterCharacter::StopJump()
 
 void AShooterCharacter::StartSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = sprintSpeed;
+	bSprinting = true;
 }
 
 void AShooterCharacter::StopSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = defaultSpeed;
+	bSprinting = false;
 }
 
 void AShooterCharacter::EKeyPressed()
@@ -252,6 +256,23 @@ void AShooterCharacter::CameraInterpZoom(float DeltaTime)
 		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, ZoomInterpSpeed);
 	}
 	GetShooterCameraComponent()->SetFieldOfView(CameraCurrentFOV);
+}
+
+void AShooterCharacter::ChangeSpeed()
+{
+	if (bSprinting && !bAiming)
+	{
+		CurrentSpeed = SprintSpeed;
+	}
+	else if (bAiming)
+	{
+		CurrentSpeed = DefaultSpeed;
+	}
+	else
+	{
+		CurrentSpeed = DefaultSpeed;
+	}
+	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
