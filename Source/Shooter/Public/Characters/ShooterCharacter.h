@@ -62,7 +62,17 @@ protected:
 	void AimingButtonPressed();
 	void AimigButtonReleased();
 
+	void StopAiming();
+
 	void CameraInterpZoom(float DeltaTime);
+
+	void CalculateCrosshairSpread(float DeltaTime);
+
+	UFUNCTION()
+	void StartCrosshairBulletFire();
+
+	UFUNCTION()
+	void FinishCrosshairBulletFire();
 
 	void ChangeSpeed();
 
@@ -110,7 +120,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void ReleaseClip();
-
 
 private:
 
@@ -166,7 +175,24 @@ private:
 	float ZoomInterpSpeed;
 
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairSpreadMultiplier;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairVelocityFactor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairInAirFactor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairAimFactor;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairShootingFactor;
+
+	float ShootTimeDuration;
+	bool bFiringBullet;
+	FTimerHandle CrosshairShootTime;
 
 	FTimerHandle AutoFireTimer;
 
@@ -239,6 +265,8 @@ public:
 
 	FORCEINLINE UCameraComponent* GetShooterCameraComponent() const { return ShooterCameraComponent; }
 	FORCEINLINE bool GetAiming() const { return bAiming; }
+	UFUNCTION(BlueprintCallable)
+	float GetCrosshairSpreadMultiplier() const;
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() { return CharacterState; }
 	FORCEINLINE void SetCharacterState(ECharacterState State) { CharacterState = State; }
