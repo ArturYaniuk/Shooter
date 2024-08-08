@@ -21,25 +21,44 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaTime) override;
 
-	UPROPERTY(BlueprintReadOnly)
+protected:
+
+	void TurnInPlace();
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class AShooterCharacter* ShooterCharacter;
 
-	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class UCharacterMovementComponent* ShooterCharacterMovement;
 
-	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float GroundSpeed;
 
-	UPROPERTY(BlueprintReadOnly, Category = Movement)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool IsFalling;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
+	
+	float CharacterYaw;
+
+	float CharacterYawLastFrame;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = YawOffset, meta = (AllowPrivateAccess = "true"))
+	float RootYawOffset;
+
+	float RotationCurve;
+
+	float RotationCurveLastFrame;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Turn, meta = (AllowPrivateAccess = "true"))
+	float Pitch;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bEquipping;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Movement | Character State")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement | Character State", meta = (AllowPrivateAccess = "true"))
 	ECharacterState CharacterState;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))

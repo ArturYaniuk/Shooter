@@ -61,8 +61,8 @@ AShooterCharacter::AShooterCharacter() :
 	ShooterCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
 
 	ShooterCameraComponent->bUsePawnControlRotation = true;
-	ShooterCameraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("b_rootSocket")));
-
+//	ShooterCameraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("b_rootSocket")));
+	ShooterCameraComponent->SetupAttachment(RootComponent);
 
 
 	//Create Hand Scene Component
@@ -515,7 +515,7 @@ void AShooterCharacter::ReloadWeapon(AWeapon* Weapon,bool pocketReload)
 	
 	if (!pocketReload)
 	{
-		if (CarringAmmo()) 
+		if (CarringAmmo() && !EquippedWeapon->ClipIsFull()) 
 			{
 				CombatState = ECombatState::ECS_Reloading;
 
