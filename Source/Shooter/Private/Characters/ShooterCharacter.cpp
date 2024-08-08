@@ -4,6 +4,8 @@
 #include "Characters/ShooterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Items/Item.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Items/Weapons/Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -14,16 +16,38 @@
 #include "Items/Ammo.h"
 
 AShooterCharacter::AShooterCharacter() :
+	//Fire
 	bShouldFire(true),
 	bFireButtonPressed(false),
+	//Crosshair setup
+	CrosshairSpreadMultiplier(0.f),
+	CrosshairVelocityFactor(0.f),
+	CrosshairInAirFactor(0.f),
+	CrosshairAimFactor(0.f),
+	CrosshairShootingFactor(0.f),
+	ShootTimeDuration(0.05f),
+	bFiringBullet(false),
+	//Movement
+	SprintSpeed(1200.0f),
+	DefaultSpeed(600.0f),
+	CurrentSpeed(600.0f),
+	bSprinting(false),
+	//Aiming setup
+	CameraCurrentFOV(0.f),
+	ZoomInterpSpeed(0.f),
+	bAiming(false),	
+	CameraDefaultFOV(0.f),
+	CameraZoomedFOV(60.f),
+	//Default weapon prop
 	Starting9mmAmmo(85),
 	StartingARAmmo(120),
-	sprintSpeed(1200.0f),
-	defaultSpeed(600.0f),
+	//Trace item
 	bShouldTraceForItems(false),
 	OverlappedItemCount(0),
+	//States
 	CombatState(ECombatState::ECS_Unoccupied),
 	CharacterState(ECharacterState::ECS_Unequipped),
+	//Sounds
 	bShouldPlayEquipSound(true),
 	EquipSoundResetTime(0.2f)
 {
@@ -37,8 +61,9 @@ AShooterCharacter::AShooterCharacter() :
 	ShooterCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
 
 	ShooterCameraComponent->bUsePawnControlRotation = true;
+//	ShooterCameraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("b_rootSocket")));
+	ShooterCameraComponent->SetupAttachment(RootComponent);
 
-	GetMesh()->SetupAttachment(ShooterCameraComponent);
 
 	//Create Hand Scene Component
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
@@ -49,6 +74,11 @@ void AShooterCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	InitializeAmmoMap();
+	if (ShooterCameraComponent)
+	{
+		CameraDefaultFOV = GetShooterCameraComponent()->FieldOfView;
+		CameraCurrentFOV = CameraCurrentFOV;
+	}
 }
 
 void AShooterCharacter::Tick(float DeltaTime)
@@ -56,6 +86,9 @@ void AShooterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TraceForItems();
+	CameraInterpZoom(DeltaTime);
+	ChangeSpeed();
+	CalculateCrosshairSpread(DeltaTime);
 
 }
 
@@ -71,6 +104,9 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AShooterCharacter::StartJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AShooterCharacter::StopJump);
+
+	PlayerInputComponent->BindAction("AimingButton", IE_Pressed, this, &AShooterCharacter::AimingButtonPressed);
+	PlayerInputComponent->BindAction("AimingButton", IE_Released, this, &AShooterCharacter::AimigButtonReleased);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AShooterCharacter::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AShooterCharacter::StopSprint);
@@ -140,12 +176,12 @@ void AShooterCharacter::StopJump()
 
 void AShooterCharacter::StartSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = sprintSpeed;
+	bSprinting = true;
 }
 
 void AShooterCharacter::StopSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = defaultSpeed;
+	bSprinting = false;
 }
 
 void AShooterCharacter::EKeyPressed()
@@ -179,7 +215,7 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 	WeaponToEquip->Equip(GetMesh(), FName("RightHandSocket"));
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
-
+	StopAiming();
 	
 }
 
@@ -194,6 +230,7 @@ void AShooterCharacter::DropWeapon()
 		CharacterState = ECharacterState::ECS_Unequipped;
 		EquippedWeapon->ThrowWeapon();
 		Inventory.Remove(EquippedWeapon);
+		StopAiming();
 
 	}
 }
@@ -211,7 +248,111 @@ void AShooterCharacter::FireWeapon()
 		EquippedWeapon->DecrementAmmo();
 
 		StartFireTimer();
+		StartCrosshairBulletFire();
 	}
+}
+
+void AShooterCharacter::AimingButtonPressed()
+{
+	if (CombatState == ECombatState::ECS_Reloading || CombatState == ECombatState::ECS_Equipping) return;
+	bAiming = true;
+}
+
+void AShooterCharacter::AimigButtonReleased()
+{
+	bAiming = false;
+}
+
+void AShooterCharacter::StopAiming()
+{
+	if (bAiming)
+	{
+		bAiming = false;
+	}
+}
+
+void AShooterCharacter::CameraInterpZoom(float DeltaTime)
+{
+	//Set Current camera field of view
+	if (bAiming)
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	else
+	{
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	GetShooterCameraComponent()->SetFieldOfView(CameraCurrentFOV);
+}
+
+void AShooterCharacter::CalculateCrosshairSpread(float DeltaTime)
+{
+	FVector2D WalkSpeedRange{ 0.f, 600.f };
+	FVector2D VelocityMultiplierRange{ 0.f, 1.f };
+	FVector Velocity{ GetVelocity() };
+	Velocity.Z = 0.f;
+
+	//Calculate crosshair Velocity factor
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+
+	//Calculate crosshair in air factor
+	if (GetCharacterMovement()->IsFalling())
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
+	}
+	else
+	{
+		CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
+	}
+	//Calculate crosshair aim factor
+	if (bAiming)
+	{
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.5f, DeltaTime, 30.f);
+	}
+	else
+	{
+		CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+	}
+	//Calculate crosshair firing
+	if (bFiringBullet)
+	{
+		CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 60.f);
+	}
+	else
+	{
+		CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 60.f);
+	}
+
+	CrosshairSpreadMultiplier = 0.5f + CrosshairVelocityFactor + CrosshairInAirFactor - CrosshairAimFactor + CrosshairShootingFactor;
+
+}
+
+void AShooterCharacter::StartCrosshairBulletFire()
+{
+	bFiringBullet = true;
+	GetWorldTimerManager().SetTimer(CrosshairShootTime, this, &AShooterCharacter::FinishCrosshairBulletFire, ShootTimeDuration);
+}
+
+void AShooterCharacter::FinishCrosshairBulletFire()
+{
+	bFiringBullet = false;
+}
+
+void AShooterCharacter::ChangeSpeed()
+{
+	if (bSprinting && !bAiming)
+	{
+		CurrentSpeed = SprintSpeed;
+	}
+	else if (bAiming)
+	{
+		CurrentSpeed = DefaultSpeed;
+	}
+	else
+	{
+		CurrentSpeed = DefaultSpeed;
+	}
+	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
 
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
@@ -374,12 +515,12 @@ void AShooterCharacter::ReloadWeapon(AWeapon* Weapon,bool pocketReload)
 	
 	if (!pocketReload)
 	{
-		if (CarringAmmo()) 
+		if (CarringAmmo() && !EquippedWeapon->ClipIsFull()) 
 			{
 				CombatState = ECombatState::ECS_Reloading;
 
 				UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
+				StopAiming();
 				if (AnimInstance && ReloadMontage)
 				{
 					AnimInstance->Montage_Play(ReloadMontage);
@@ -589,6 +730,7 @@ void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewI
 
 	if (AnimInstance && EquipMontage)
 	{
+		StopAiming();
 		AnimInstance->Montage_Play(EquipMontage);
 		AnimInstance->Montage_JumpToSection(FName("Equip"));
 	}
@@ -633,6 +775,11 @@ void AShooterCharacter::StartPocketReload()
 		FinishReloading(OldEquippedWeapon);
 	}
 	
+}
+
+float AShooterCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CrosshairSpreadMultiplier;
 }
 
 void AShooterCharacter::StartEquipSoundTimer()
