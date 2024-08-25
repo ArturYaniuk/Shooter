@@ -9,6 +9,7 @@
 #include "CharacterTypes.h"
 #include "items/Weapons/AmmoType.h"
 #include "CombatState.h"
+#include "NiagaraComponent.h"
 #include "ShooterCharacter.generated.h"
 
 class AItem;
@@ -76,7 +77,7 @@ protected:
 
 	void ChangeSpeed();
 
-	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutBeamLocation);
 
 	void FireButtonPressed();
 	void FireButtonReleased();
@@ -113,6 +114,8 @@ protected:
 	void FiveKeyPressed();
 	void SixKeyPressed();
 
+	void CrouchButtonPressed();
+
 	void ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex);
 
 	UFUNCTION(BlueprintCallable)
@@ -138,6 +141,8 @@ private:
 
 	float CurrentSpeed;
 
+	bool bCrouching;
+
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
@@ -148,7 +153,7 @@ private:
 	class UAnimMontage* HipFireMontage; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* ImpactParticles;
+	UNiagaraSystem* ImpactParticles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
@@ -170,6 +175,15 @@ private:
 	float CameraZoomedFOV;
 
 	float CameraCurrentFOV;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	FVector DefaultCameraPosition;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	FVector CrouchCameraPosition;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	FVector CurrentCameraPosition;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float ZoomInterpSpeed;
@@ -273,6 +287,7 @@ public:
 	FORCEINLINE bool ShouldPlayEquipSound() const { return bShouldPlayEquipSound; }
 	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
+	FORCEINLINE bool GetCrouching() const { return bCrouching; }
 
 
 	void StartEquipSoundTimer();
