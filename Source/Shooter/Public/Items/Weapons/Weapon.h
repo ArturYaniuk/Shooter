@@ -35,6 +35,39 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ECharacterState CharacterAnimState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ClipBoneName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ReloadMontageSection;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UAnimInstance> AnimBP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AutoFireRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundCue* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsMiddle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsDown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsRight;
 };
 /**
  * 
@@ -57,14 +90,20 @@ public:
 	void DecrementAmmo();
 
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
-
 	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
-
 	FORCEINLINE FName GetReloadMontageSection() const { return ReloadMontageSection; }
-
+	FORCEINLINE void SetReloadMontageSection(FName Name) { ReloadMontageSection = Name; }
 	FORCEINLINE ECharacterState GetWDCharacterState() const { return WDCharacterState; }
+	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
+	FORCEINLINE void SetClipBoneName(FName NewClipBoneName) { ClipBoneName = NewClipBoneName; }
+	FORCEINLINE void SetMovingClip(bool Move) { bMovingClip = Move; }
+	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
+	FORCEINLINE UParticleSystem* GetMuzzleFash() const { return MuzzleFlash; }
+	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
 
 	void ReloadAmmo(int32 Amount);
+
+	bool ClipIsFull();
 
 protected:
 
@@ -94,13 +133,43 @@ private:
 	EAmmoType AmmoType;
 
 	// FName for the Reload Montage Section
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	FName ReloadMontageSection;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	UDataTable* WeaponDataTable;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	ECharacterState WDCharacterState;
 
+	// True when moving the clip while reloading
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	bool bMovingClip;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	FName ClipBoneName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	float AutoFireRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	USoundCue* FireSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* CrosshairsMiddle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* CrosshairsDown;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* CrosshairsRight;
 };

@@ -18,7 +18,8 @@ AWeapon::AWeapon() :
 	MagazineCapacity(30),
 	WeaponType(EWeaponType::EWT_SubmachineGun),
 	AmmoType(EAmmoType::EAT_9mm),
-	ReloadMontageSection(FName(TEXT("Reload")))
+	ReloadMontageSection(FName(TEXT("Reload"))),
+	ClipBoneName(TEXT("b_gun_mag"))
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -32,6 +33,11 @@ void AWeapon::ReloadAmmo(int32 Amount)
 {
 	checkf(Ammo + Amount <= MagazineCapacity, TEXT("Attempted to reload with more than magazine capacity"));
 	Ammo += Amount;
+}
+
+bool AWeapon::ClipIsFull()
+{
+	return Ammo>= MagazineCapacity;
 }
 
 void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -91,7 +97,17 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
 			SetItemName(WeaponDataRow->ItemName);
 			WDCharacterState = WeaponDataRow->CharacterAnimState;
-			
+			SetClipBoneName(WeaponDataRow->ClipBoneName);
+			SetReloadMontageSection(WeaponDataRow->ReloadMontageSection);
+			GetItemMesh()->SetAnimInstanceClass(WeaponDataRow->AnimBP);
+			AutoFireRate = WeaponDataRow->AutoFireRate;
+			MuzzleFlash = WeaponDataRow->MuzzleFlash;
+			FireSound = WeaponDataRow->FireSound;
+			CrosshairsMiddle = WeaponDataRow->CrosshairsMiddle;
+			CrosshairsTop = WeaponDataRow->CrosshairsTop;
+			CrosshairsDown = WeaponDataRow->CrosshairsDown;
+			CrosshairsLeft = WeaponDataRow->CrosshairsLeft;
+			CrosshairsRight = WeaponDataRow->CrosshairsRight;
 		}
 	}
 
