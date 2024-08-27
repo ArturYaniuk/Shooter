@@ -39,6 +39,7 @@ void UShooterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	if (ShooterCharacter)
 	{
 		bAiming = ShooterCharacter->GetAiming();
+		bCrouching = ShooterCharacter->GetCrouching();
 
 		if (ShooterCharacterMovement)
 		{

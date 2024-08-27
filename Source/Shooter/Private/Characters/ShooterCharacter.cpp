@@ -13,6 +13,8 @@
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Characters/Enemy.h"
+#include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
 
 AShooterCharacter::AShooterCharacter() :
@@ -32,12 +34,17 @@ AShooterCharacter::AShooterCharacter() :
 	DefaultSpeed(600.0f),
 	CurrentSpeed(600.0f),
 	bSprinting(false),
+	bCrouching(false),
 	//Aiming setup
 	CameraCurrentFOV(0.f),
 	ZoomInterpSpeed(0.f),
 	bAiming(false),	
 	CameraDefaultFOV(0.f),
 	CameraZoomedFOV(60.f),
+	//Camera setup
+	DefaultCameraPosition(0.0f, 0.0f, 35.0f),
+	CrouchCameraPosition(0.0f, 0.0f, 0.0f),
+	CurrentCameraPosition(0.0f, 0.0f, 0.0f),
 	//Default weapon prop
 	Starting9mmAmmo(85),
 	StartingARAmmo(120),
@@ -58,8 +65,6 @@ AShooterCharacter::AShooterCharacter() :
 
 	ShooterCameraComponent->SetupAttachment(CastChecked<USceneComponent, UCapsuleComponent>(GetCapsuleComponent()));
 
-	ShooterCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
-
 	ShooterCameraComponent->bUsePawnControlRotation = true;
 //	ShooterCameraComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("b_rootSocket")));
 	ShooterCameraComponent->SetupAttachment(RootComponent);
@@ -79,6 +84,7 @@ void AShooterCharacter::BeginPlay()
 		CameraDefaultFOV = GetShooterCameraComponent()->FieldOfView;
 		CameraCurrentFOV = CameraCurrentFOV;
 	}
+	ShooterCameraComponent->SetRelativeLocation(DefaultCameraPosition);
 }
 
 void AShooterCharacter::Tick(float DeltaTime)
@@ -120,12 +126,16 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("ReloadButton", IE_Pressed, this, &AShooterCharacter::ReloadButtonPressed);
 
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this,&AShooterCharacter::CrouchButtonPressed);
+
 	PlayerInputComponent->BindAction("1Key", IE_Pressed, this, &AShooterCharacter::OneKeyPressed);
 	PlayerInputComponent->BindAction("2Key", IE_Pressed, this, &AShooterCharacter::TwoKeyPressed);
 	PlayerInputComponent->BindAction("3Key", IE_Pressed, this, &AShooterCharacter::ThreeKeyPressed);
 	PlayerInputComponent->BindAction("4Key", IE_Pressed, this, &AShooterCharacter::FourKeyPressed);
 	PlayerInputComponent->BindAction("5Key", IE_Pressed, this, &AShooterCharacter::FiveKeyPressed);
 	PlayerInputComponent->BindAction("6Key", IE_Pressed, this, &AShooterCharacter::SixKeyPressed);
+
+
 
 }
 
@@ -355,50 +365,40 @@ void AShooterCharacter::ChangeSpeed()
 	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
 
-bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
+bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
 {
-	FVector2D ViewportSize;
-	if (GEngine && GEngine->GameViewport)
+	FVector OutBeamLocation;
+
+	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
+
+	if (bCrosshairHit)
 	{
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	
+		OutBeamLocation = CrosshairHitResult.Location;
+	}
+	else 
+	{
+		
 	}
 
-	FVector2D CrosshairLocatin(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
+	const FVector WeaponTraceStart{ MuzzleSocketLocation };
+	const FVector StartToEnd{ OutBeamLocation - WeaponTraceStart };
+	const FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 1.25f };
+	GetWorld()->LineTraceSingleByChannel(
+		OutHitResult,
+		WeaponTraceStart,
+		WeaponTraceEnd,
+		ECollisionChannel::ECC_Visibility);
 
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0), CrosshairLocatin, CrosshairWorldPosition, CrosshairWorldDirection);
-
-	if (bScreenToWorld)
+	if (!OutHitResult.bBlockingHit) 
 	{
-		FHitResult ScreenTraceHit;
-		const FVector Start{ CrosshairWorldPosition };
-		const FVector End{ CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f };
-
-		OutBeamLocation = End;
-
-		GetWorld()->LineTraceSingleByChannel(ScreenTraceHit, Start, End, ECollisionChannel::ECC_Visibility);
-
-		if (ScreenTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = ScreenTraceHit.Location;
-
-		}
-
-		FHitResult WeaponTraceHit;
-		const FVector WeaponTraceStart{ MuzzleSocketLocation};
-		const FVector WeaponTraceEnd{ OutBeamLocation };
-		GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
-
-		if (WeaponTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = WeaponTraceHit.Location;
-		}
-		return true;
+		OutHitResult.Location = OutBeamLocation;
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void AShooterCharacter::FireButtonPressed()
@@ -462,6 +462,7 @@ void AShooterCharacter::PlayFireSound()
 
 void AShooterCharacter::SendBullet()
 {
+	// Send bullet
 	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
 	if (BarrelSocket)
 	{
@@ -469,21 +470,70 @@ void AShooterCharacter::SendBullet()
 
 		if (EquippedWeapon->GetMuzzleFash())
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
+			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation());
 		}
 
-		FVector BeamEnd;
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+		FHitResult BeamHitResult;
+
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
+
 		if (bBeamEnd)
 		{
-			if (ImpactParticles)
+			// Does hit Actor implement BulletHitInterface?
+			if (BeamHitResult.GetActor())
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEnd);
+				IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.GetActor());
+				if (BulletHitInterface)
+				{
+					BulletHitInterface->BulletHit_Implementation(BeamHitResult);
+				}
+
+				AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
+				if (HitEnemy)
+				{
+
+					float HitDamage = EquippedWeapon->GetDamage();
+					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetCritBone())
+					{
+						HitDamage = EquippedWeapon->GetCritPointDamage();
+					}
+					else
+					{
+						HitDamage = EquippedWeapon->GetDamage();
+					}
+
+						UGameplayStatics::ApplyDamage(
+							BeamHitResult.GetActor(),
+							HitDamage,
+							GetController(),
+							this,
+							UDamageType::StaticClass());
+
+				}
 			}
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
+					
+			
+			else
+			{
+				// Spawn default particles
+				if (ImpactParticles)
+				{
+					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+						GetWorld(),
+						ImpactParticles,
+						BeamHitResult.Location);
+				}
+			}
+
+
+			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				BeamParticles,
+				SocketTransform);
 			if (Beam)
 			{
-				Beam->SetVectorParameter(FName("Target"), BeamEnd);
+				Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
 			}
 		}
 	}
@@ -711,6 +761,16 @@ void AShooterCharacter::SixKeyPressed()
 {
 	if (!EquippedWeapon || EquippedWeapon->GetSlotIndex() == 5) return;
 	ExchangeInventoryItem(EquippedWeapon->GetSlotIndex(), 5);
+}
+
+void AShooterCharacter::CrouchButtonPressed()
+{
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		bCrouching = !bCrouching;
+		ShooterCameraComponent->SetRelativeLocation(CurrentCameraPosition = bCrouching ? CurrentCameraPosition = CrouchCameraPosition : CurrentCameraPosition = DefaultCameraPosition);
+	}
+
 }
 
 void AShooterCharacter::ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex)

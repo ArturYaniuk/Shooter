@@ -8,6 +8,7 @@
 #include "AmmoType.h"
 #include "Characters/CharacterTypes.h"
 #include "Engine/DataTable.h"
+#include "NiagaraComponent.h"
 #include "Weapon.generated.h"
 
 USTRUCT(BlueprintType)
@@ -49,7 +50,7 @@ struct FWeaponDataTable : public FTableRowBase
 	float AutoFireRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UParticleSystem* MuzzleFlash;
+	class UNiagaraSystem* MuzzleFlash;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundCue* FireSound;
@@ -68,6 +69,12 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CritPointDamage;
 };
 /**
  * 
@@ -98,8 +105,11 @@ public:
 	FORCEINLINE void SetClipBoneName(FName NewClipBoneName) { ClipBoneName = NewClipBoneName; }
 	FORCEINLINE void SetMovingClip(bool Move) { bMovingClip = Move; }
 	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
-	FORCEINLINE UParticleSystem* GetMuzzleFash() const { return MuzzleFlash; }
+	FORCEINLINE UNiagaraSystem* GetMuzzleFash() const { return MuzzleFlash; }
 	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
+
+	FORCEINLINE float GetDamage() const { return Damage; }
+	FORCEINLINE float GetCritPointDamage() const { return CritPointDamage; }
 
 	void ReloadAmmo(int32 Amount);
 
@@ -153,7 +163,7 @@ private:
 	float AutoFireRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
-	UParticleSystem* MuzzleFlash;
+	UNiagaraSystem* MuzzleFlash;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	USoundCue* FireSound;
@@ -172,4 +182,11 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	float Damage;
+
+	/** Amount of damage when a bullet hits the head */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	float CritPointDamage;
 };
