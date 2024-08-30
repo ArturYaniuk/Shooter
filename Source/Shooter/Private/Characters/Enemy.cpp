@@ -10,7 +10,10 @@
 // Sets default values
 AEnemy::AEnemy() :
 	Health(1000.f),
-	MaxHealth(1000.f)
+	MaxHealth(1000.f),
+	bCanHitReact(true),
+	HitReactTimeMin(0.5f),
+	HitReactTimeMax(1.0f)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -33,17 +36,32 @@ void AEnemy::BeginPlay()
 
 void AEnemy::Die()
 {
+	PlayHitMontage(FName("DeathA"));
 
 }
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance)
+	if (bCanHitReact)
 	{
-		AnimInstance->Montage_Play(HitMontage, PlayRate);
-		AnimInstance->Montage_JumpToSection(Section, HitMontage);
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			AnimInstance->Montage_Play(HitMontage, PlayRate);
+			AnimInstance->Montage_JumpToSection(Section, HitMontage);
+		}
+		bCanHitReact = false;
+
+		const float HitReactTime{ FMath::FRandRange(HitReactTimeMin, HitReactTimeMax) };
+
+		GetWorldTimerManager().SetTimer(HitReactTimer, this, &AEnemy::ResetHitReactTimer, HitReactTime);
 	}
+	
+}
+
+void AEnemy::ResetHitReactTimer()
+{
+	bCanHitReact = true;
 }
 
 // Called every frame
@@ -71,7 +89,6 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticles, HitResult.Location, FRotator(0.f));
 		
 	}
-	PlayHitMontage(FName("HitReactFront"));
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -84,6 +101,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	else
 	{
 		Health -= DamageAmount;
+		PlayHitMontage(FName("HitReactFront"));
 	}
 	return DamageAmount;
 }

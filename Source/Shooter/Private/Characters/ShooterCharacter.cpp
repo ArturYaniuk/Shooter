@@ -471,7 +471,7 @@ void AShooterCharacter::SendBullet()
 		if (EquippedWeapon->GetMuzzleFash())
 		{
 			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation());
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
 		}
 
 		FHitResult BeamHitResult;
