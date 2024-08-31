@@ -62,6 +62,17 @@ private:
 
 	void ResetHitReactTimer();
 
+	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
+	class UBehaviorTree* BehaviorTree;
+
+	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint;
+
+	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector SecondPatrolPoint;
+
+	class AEnemyController* EnemyController;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -75,4 +86,5 @@ public:
 
 
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
+	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 };

@@ -13,7 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Characters/Enemy.h"
+#include "Characters/Enemy/Enemy.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
 
