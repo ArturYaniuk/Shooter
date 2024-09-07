@@ -19,13 +19,20 @@ AEnemy::AEnemy() :
 	MaxHealth(1000.f),
 	bCanHitReact(true),
 	HitReactTimeMin(0.5f),
-	HitReactTimeMax(1.0f)
+	HitReactTimeMax(1.0f),
+	bStunned(false),
+	StunChance(0.5f),
+	bInAgroRange(false),
+	bInAttackRange(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	AgrosSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
 	AgrosSphere->SetupAttachment(GetRootComponent());
+
+	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRange"));
+	CombatRangeSphere->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -34,6 +41,10 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	AgrosSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroSphereOverlap);
+	AgrosSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AgroSphereEndOverlap);
+
+	CombatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::CombatRangeOverlap);
+	CombatRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::CombatRangeEndOverlap);
 	
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
@@ -94,11 +105,78 @@ void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 {
 	if (OtherActor == nullptr) return;
 	
-	auto Character = Cast<AShooterCharacter>(OtherActor);
+	auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
 
-	if (Character)
+	if (ShooterCharacter)
 	{
-		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Character);
+		bInAgroRange = true;
+		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), true);
+	}
+}
+
+void AEnemy::AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == nullptr) return;
+
+	auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+
+	if (ShooterCharacter)
+	{
+		bInAgroRange = false;
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), false);
+	}
+}
+
+
+void AEnemy::SetStunned(bool Stunned)
+{
+	bStunned = Stunned;
+	if (EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Stunned"), Stunned);
+	}
+}
+
+void AEnemy::CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == nullptr) return;
+	auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+
+	if (ShooterCharacter)
+	{
+		bInAttackRange = true;
+		if (EnemyController)
+		{
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), true);
+		}
+	}
+	
+}
+
+void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == nullptr) return;
+	auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
+
+	if (ShooterCharacter)
+	{
+		bInAttackRange = false;
+		if (EnemyController)
+		{
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), false);
+		}
+	}
+}
+
+void AEnemy::PlayAttackMontage(FName Section, float PlayRate)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
 	}
 }
 
@@ -130,7 +208,6 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	if (ImpactParticles)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticles, HitResult.Location, FRotator(0.f));
-		
 	}
 }
 
@@ -144,7 +221,14 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	else
 	{
 		Health -= DamageAmount;
-		PlayHitMontage(FName("HitReactFront"));
+		const float Stunned = FMath::FRandRange(0.f, 1.f);
+
+		if (Stunned <= StunChance)
+		{
+			PlayHitMontage(FName("HitReactFront"));
+			SetStunned(true);
+		}
+	
 	}
 	return DamageAmount;
 }
