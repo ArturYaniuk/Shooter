@@ -7,6 +7,7 @@
 #include "BulletHitInterface.h"
 #include "Explosive.h"
 #include "NiagaraComponent.h"
+#include "../CharacterTypes.h"
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -59,7 +60,10 @@ protected:
 		int32 OtherBodyIndex);
 
 	UFUNCTION(BlueprintCallable)
-	void PlayAttackMontage(FName Section, float PlayRate);
+	void PlayAttackMontage(FName Section, float PlayRate, bool bAlive = true);
+
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 	
 
 private:
@@ -71,7 +75,7 @@ private:
 	class USoundCue* ImpactSound;
 
 	//Current Health of enemy
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
 	float Health;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
@@ -132,6 +136,16 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FName DeathA;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FName DeathB;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bAlive;
+
 
 	//TODO: different attack animation section
 

@@ -20,10 +20,11 @@ AEnemy::AEnemy() :
 	bCanHitReact(true),
 	HitReactTimeMin(0.5f),
 	HitReactTimeMax(1.0f),
+	bInAgroRange(false),
 	bStunned(false),
 	StunChance(0.5f),
-	bInAgroRange(false),
-	bInAttackRange(false)
+	bInAttackRange(false),
+	bAlive(true)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -78,8 +79,27 @@ void AEnemy::BeginPlay()
 
 void AEnemy::Die()
 {
-	PlayHitMontage(FName("DeathA"));
+	//const int32 Section = FMath::RandRange(0, 1); //uncomment for random death animation
+	const int32 Section = 0;
 
+	switch (Section)
+	{
+	case 0:
+		PlayHitMontage(DeathA);
+		DeathPose = EDeathPose::EDP_DeathA;
+		break;
+
+	case 1:
+		PlayHitMontage(DeathB);
+		DeathPose = EDeathPose::EDP_DeathB;
+		break;
+	default:
+		break;
+
+	}
+
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Death"), true);
+	bAlive = false;
 }
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
@@ -169,15 +189,19 @@ void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	}
 }
 
-void AEnemy::PlayAttackMontage(FName Section, float PlayRate)
+void AEnemy::PlayAttackMontage(FName Section, float PlayRate, bool isAlive)
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (AnimInstance && AttackMontage)
+	if (isAlive)
 	{
-		AnimInstance->Montage_Play(AttackMontage);
-		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		if (AnimInstance && AttackMontage)
+		{
+			AnimInstance->Montage_Play(AttackMontage);
+			AnimInstance->Montage_JumpToSection(Section, AttackMontage);
+		}
 	}
+	else return;
 }
 
 void AEnemy::ResetHitReactTimer()
@@ -216,7 +240,7 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	if (Health - DamageAmount <- 0.f)
 	{
 		Health = 0.f;
-		Die();
+		if (bAlive)		Die();
 	}
 	else
 	{
