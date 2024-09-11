@@ -17,6 +17,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
 
+
 AShooterCharacter::AShooterCharacter() :
 	//Fire
 	bShouldFire(true),
@@ -36,11 +37,11 @@ AShooterCharacter::AShooterCharacter() :
 	bSprinting(false),
 	bCrouching(false),
 	//Aiming setup
-	CameraCurrentFOV(0.f),
 	ZoomInterpSpeed(0.f),
 	bAiming(false),	
 	CameraDefaultFOV(0.f),
 	CameraZoomedFOV(60.f),
+	CameraCurrentFOV(0.f),
 	//Camera setup
 	DefaultCameraPosition(0.0f, 0.0f, 35.0f),
 	CrouchCameraPosition(0.0f, 0.0f, 0.0f),
@@ -253,7 +254,7 @@ void AShooterCharacter::FireWeapon()
 	if (WeaponHasAmmo())
 	{
 		PlayFireSound();
-		SendBullet();
+		SpawnProjectile();
 		PlayGunFireMontage();
 		EquippedWeapon->DecrementAmmo();
 
@@ -821,6 +822,35 @@ void AShooterCharacter::GrabClip()
 void AShooterCharacter::ReleaseClip()
 {
 	EquippedWeapon->SetMovingClip(false);
+}
+
+void AShooterCharacter::SpawnProjectile()
+{
+	// Send bullet
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+
+		if (EquippedWeapon->GetMuzzleFash())
+		{
+			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
+		}
+
+		FHitResult BeamHitResult;
+
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), this->GetViewRotation(), SpawnParams);
+
+		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector());
+				
+	}
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()

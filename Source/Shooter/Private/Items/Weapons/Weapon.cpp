@@ -102,6 +102,8 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			GetItemMesh()->SetAnimInstanceClass(WeaponDataRow->AnimBP);
 			AutoFireRate = WeaponDataRow->AutoFireRate;
 			MuzzleFlash = WeaponDataRow->MuzzleFlash;
+			DefaultImpactParticle = WeaponDataRow->ImpactParticle;
+			BeamParticles = WeaponDataRow->BeamParticle;
 			FireSound = WeaponDataRow->FireSound;
 			CrosshairsMiddle = WeaponDataRow->CrosshairsMiddle;
 			CrosshairsTop = WeaponDataRow->CrosshairsTop;
