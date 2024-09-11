@@ -13,7 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Characters/Enemy.h"
+#include "Characters/Enemy/Enemy.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
 
@@ -471,7 +471,7 @@ void AShooterCharacter::SendBullet()
 		if (EquippedWeapon->GetMuzzleFash())
 		{
 			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation());
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
 		}
 
 		FHitResult BeamHitResult;
