@@ -848,7 +848,7 @@ void AShooterCharacter::SpawnProjectile()
 
 		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), this->GetViewRotation(), SpawnParams);
 
-		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector());
+		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector(), EquippedWeapon->GetProjectileType());
 				
 	}
 }

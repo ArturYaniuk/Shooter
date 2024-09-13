@@ -19,7 +19,8 @@ AWeapon::AWeapon() :
 	WeaponType(EWeaponType::EWT_SubmachineGun),
 	AmmoType(EAmmoType::EAT_9mm),
 	ReloadMontageSection(FName(TEXT("Reload"))),
-	ClipBoneName(TEXT("b_gun_mag"))
+	ClipBoneName(TEXT("b_gun_mag")),
+	ProjectileType(EProjectileType::EPT_Default)
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -113,6 +114,7 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 
 			Damage = WeaponDataRow->Damage;
 			CritPointDamage = WeaponDataRow->CritPointDamage;
+			ProjectileType = WeaponDataRow->ProjectileType;
 		}
 	}
 

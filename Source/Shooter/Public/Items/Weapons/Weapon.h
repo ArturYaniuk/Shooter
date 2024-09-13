@@ -81,6 +81,9 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CritPointDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EProjectileType ProjectileType;
 };
 /**
  * 
@@ -118,6 +121,8 @@ public:
 
 	FORCEINLINE float GetDamage() const { return Damage; }
 	FORCEINLINE float GetCritPointDamage() const { return CritPointDamage; }
+
+	FORCEINLINE EProjectileType GetProjectileType() const { return ProjectileType; }
 
 	void ReloadAmmo(int32 Amount);
 
@@ -203,4 +208,7 @@ private:
 	/** Amount of damage when a bullet hits the head */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	float CritPointDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	EProjectileType ProjectileType;
 };
