@@ -29,6 +29,7 @@ AProjectile::AProjectile()	:
 
 	ProjectileMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ProjectileMeshComponent"));
 
+
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SphereComponent"));
 	// Set the sphere's collision profile name to "Projectile".
 	CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
@@ -40,7 +41,7 @@ AProjectile::AProjectile()	:
 	RootComponent = CollisionComponent;
 
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
-
+	ProjectileMeshComponent->SetupAttachment(RootComponent);
 
 	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
 }
