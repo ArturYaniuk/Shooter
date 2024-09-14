@@ -8,6 +8,10 @@
 #include "Explosive.h"
 #include "NiagaraComponent.h"
 #include "../CharacterTypes.h"
+#include "NiagaraComponent.h"
+#include "items/Projectile.h"
+#include "items/Weapons/AmmoType.h"
+
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -65,6 +69,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 	
+	UFUNCTION(BlueprintCallable)
+	void Attack();
 
 private:
 
@@ -145,6 +151,15 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bAlive;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	class UNiagaraSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	EProjectileType ProjectileType;
 
 
 	//TODO: different attack animation section

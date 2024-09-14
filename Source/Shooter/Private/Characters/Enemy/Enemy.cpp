@@ -11,6 +11,8 @@
 #include "./Characters/Enemy/EnemyController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/SphereComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "NiagaraFunctionLibrary.h"
 #include "./Characters/ShooterCharacter.h"
 
 // Sets default values
@@ -202,6 +204,31 @@ void AEnemy::PlayAttackMontage(FName Section, float PlayRate, bool isAlive)
 		}
 	}
 	else return;
+}
+
+void AEnemy::Attack()
+{
+	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
+		if (MuzzleFlash)
+		{
+			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlash, SocketTransform.GetLocation(), GetViewRotation());
+		}
+
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), GetViewRotation(), SpawnParams);
+
+		if (Projectile) Projectile->FireInDirection(GetViewRotation().Vector(), ProjectileType, 1.0f, 1.5f);
+
+	}
 }
 
 void AEnemy::ResetHitReactTimer()

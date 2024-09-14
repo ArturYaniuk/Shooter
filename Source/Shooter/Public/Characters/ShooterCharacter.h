@@ -78,7 +78,7 @@ protected:
 
 	void ChangeSpeed();
 
-	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutBeamLocation);
+//	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutBeamLocation);
 
 	void FireButtonPressed();
 	void FireButtonReleased();

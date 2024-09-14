@@ -365,7 +365,7 @@ void AShooterCharacter::ChangeSpeed()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
-
+/*
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
 {
 	FVector OutBeamLocation;
@@ -401,6 +401,8 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 
 	return true;
 }
+
+*/
 
 void AShooterCharacter::FireButtonPressed()
 {
@@ -460,86 +462,6 @@ void AShooterCharacter::PlayFireSound()
 		UGameplayStatics::PlaySound2D(this, EquippedWeapon->GetFireSound());
 	}
 }
-
-/*void AShooterCharacter::SendBullet()
-{
-	// Send bullet
-	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
-	if (BarrelSocket)
-	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
-
-		if (EquippedWeapon->GetMuzzleFash())
-		{
-			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
-		}
-
-		FHitResult BeamHitResult;
-
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
-
-		if (bBeamEnd)
-		{
-			// Does hit Actor implement BulletHitInterface?
-			if (BeamHitResult.GetActor())
-			{
-				IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.GetActor());
-				if (BulletHitInterface)
-				{
-					BulletHitInterface->BulletHit_Implementation(BeamHitResult);
-				}
-
-				AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
-				if (HitEnemy)
-				{
-
-					float HitDamage = EquippedWeapon->GetDamage();
-					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetCritBone())
-					{
-						HitDamage = EquippedWeapon->GetCritPointDamage();
-					}
-					else
-					{
-						HitDamage = EquippedWeapon->GetDamage();
-					}
-
-						UGameplayStatics::ApplyDamage(
-							BeamHitResult.GetActor(),
-							HitDamage,
-							GetController(),
-							this,
-							UDamageType::StaticClass());
-
-				}
-			}
-					
-			
-			else
-			{
-				// Spawn default particles
-				if (ImpactParticles)
-				{
-					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-						GetWorld(),
-						ImpactParticles,
-						BeamHitResult.Location);
-				}
-			}
-
-
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				SocketTransform);
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
-			}
-		}
-	}
-}
-*/
 
 void AShooterCharacter::PlayGunFireMontage()
 {
@@ -839,9 +761,9 @@ void AShooterCharacter::SpawnProjectile()
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
 		}
 
-		FHitResult BeamHitResult;
+	//	FHitResult BeamHitResult;
 
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
+	//	bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
