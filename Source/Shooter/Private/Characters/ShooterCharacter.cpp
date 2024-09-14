@@ -461,7 +461,7 @@ void AShooterCharacter::PlayFireSound()
 	}
 }
 
-void AShooterCharacter::SendBullet()
+/*void AShooterCharacter::SendBullet()
 {
 	// Send bullet
 	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
@@ -539,6 +539,7 @@ void AShooterCharacter::SendBullet()
 		}
 	}
 }
+*/
 
 void AShooterCharacter::PlayGunFireMontage()
 {
@@ -848,7 +849,7 @@ void AShooterCharacter::SpawnProjectile()
 
 		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), this->GetViewRotation(), SpawnParams);
 
-		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector(), EquippedWeapon->GetProjectileType());
+		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector(), EquippedWeapon->GetProjectileType(), EquippedWeapon->GetDamageMultiplier(), EquippedWeapon->GetCritPointDamageMultiplier());
 				
 	}
 }

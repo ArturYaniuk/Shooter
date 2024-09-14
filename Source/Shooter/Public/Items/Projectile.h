@@ -24,6 +24,9 @@ struct FProjectileDataTable : public FTableRowBase
 	USkeletalMesh* ProjectileMeshComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UNiagaraSystem* ImpactParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CollisionRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -49,6 +52,13 @@ struct FProjectileDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ImpactImpulse;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HitDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CritDamage;
+
 };
 
 
@@ -65,15 +75,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void TakeSpawnProperties(EProjectileType ProjectileType);
-
-	virtual void OnConstruction(const FTransform& Transform);
+	void TakeSpawnProperties(EProjectileType ProjectileType, float DamageMultiplier, float CritDamageMultiplier);
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void FireInDirection(const FVector& ShootDirection, EProjectileType Projectile);
+	void FireInDirection(const FVector& ShootDirection, EProjectileType Projectile, float DamageMultiplier, float CritDamageMultiplier);
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
@@ -120,4 +128,18 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile Properties", meta = (AllowPrivateAccess = "true"))
 	float ImpactImpulse;
+
+	float Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile Properties", meta = (AllowPrivateAccess = "true"))
+	float HitDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile Properties", meta = (AllowPrivateAccess = "true"))
+	float CritDamage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile Properties", meta = (AllowPrivateAccess = "true"))
+	float WeaponDamageMultiplier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile Properties", meta = (AllowPrivateAccess = "true"))
+	float WeaponCritDamageMultiplier;
 };

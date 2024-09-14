@@ -19,7 +19,11 @@ AProjectile::AProjectile()	:
 	Bounciness(0.5f),
 	GravityScale(0.5f),
 	LifeSpan(3.0f),
-	ImpactImpulse(100.0f)
+	ImpactImpulse(100.0f),
+	HitDamage(1.0f),
+	CritDamage(3.0f),
+	WeaponDamageMultiplier(1.0f),
+	WeaponCritDamageMultiplier(1.5f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -44,6 +48,7 @@ AProjectile::AProjectile()	:
 	ProjectileMeshComponent->SetupAttachment(RootComponent);
 
 	ProjectileMovementComponent->SetUpdatedComponent(CollisionComponent);
+
 }
 
 // Called when the game starts or when spawned
@@ -53,7 +58,7 @@ void AProjectile::BeginPlay()
 	
 }
 
-void AProjectile::TakeSpawnProperties(EProjectileType LocalProjectileType)
+void AProjectile::TakeSpawnProperties(EProjectileType LocalProjectileType, float DamageMultiplier, float CritDamageMultiplier)
 {
 	const FString ProjectileTablePath{ TEXT("/Script/Engine.DataTable'/Game/DataTable/ProjectileDataTable.ProjectileDataTable'") };
 	UDataTable* ProjectileTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *ProjectileTablePath));
@@ -83,6 +88,7 @@ void AProjectile::TakeSpawnProperties(EProjectileType LocalProjectileType)
 
 			ProjectileType = ProjectileDataRow->ProjectileType;
 			ProjectileMeshComponent->SetSkeletalMesh(ProjectileDataRow->ProjectileMeshComponent);
+			ImpactParticles = ProjectileDataRow->ImpactParticles;
 			CollisionRadius = ProjectileDataRow->CollisionRadius;
 			CollisionHalfHeight = ProjectileDataRow->CollisionHalfHeight;
 			InitialSpeed = ProjectileDataRow->InitialSpeed;
@@ -92,6 +98,8 @@ void AProjectile::TakeSpawnProperties(EProjectileType LocalProjectileType)
 			GravityScale = ProjectileDataRow->GravityScale;
 			LifeSpan = ProjectileDataRow->LifeSpan;
 			ImpactImpulse = ProjectileDataRow->ImpactImpulse;
+			HitDamage = ProjectileDataRow->HitDamage;
+			CritDamage = ProjectileDataRow->CritDamage;
 		}
 
 
@@ -99,19 +107,18 @@ void AProjectile::TakeSpawnProperties(EProjectileType LocalProjectileType)
 		ProjectileMovementComponent->InitialSpeed = InitialSpeed;
 		ProjectileMovementComponent->MaxSpeed = MaxSpeed;
 		ProjectileMovementComponent->bRotationFollowsVelocity = true;
+		ProjectileMovementComponent->bRotationRemainsVertical = true;
 		ProjectileMovementComponent->bShouldBounce = bShouldBounce;
 		ProjectileMovementComponent->Bounciness = Bounciness;
 		ProjectileMovementComponent->ProjectileGravityScale = GravityScale;
+
+		WeaponDamageMultiplier = DamageMultiplier;
+		WeaponCritDamageMultiplier = CritDamageMultiplier;
 
 
 		// Delete the projectile after 3 seconds.
 		InitialLifeSpan = LifeSpan;
 	}
-}
-
-void AProjectile::OnConstruction(const FTransform& Transform)
-{
-	
 }
 
 // Called every frame
@@ -121,9 +128,9 @@ void AProjectile::Tick(float DeltaTime)
 
 }
 
-void AProjectile::FireInDirection(const FVector& ShootDirection, EProjectileType Projectile)
+void AProjectile::FireInDirection(const FVector& ShootDirection, EProjectileType Projectile, float DamageMultiplier, float CritDamageMultiplier)
 {
-	TakeSpawnProperties(Projectile);
+	TakeSpawnProperties(Projectile, DamageMultiplier, CritDamageMultiplier);
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 }
 
@@ -151,22 +158,20 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		if (HitEnemy)
 		{
 		
-		//	float HitDamage = Owner->GetEquippedWeapon()->GetDamage();
-			float HitDamage = 1.0f;
 
 			if (Hit.BoneName.ToString() == HitEnemy->GetCritBone())
 			{
-				HitDamage = 3.0f;
+				Damage = CritDamage * WeaponCritDamageMultiplier;
 				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("HEADSHOT"));
 			}
 			else
 			{
-				HitDamage = 1.0f;
+				Damage = HitDamage * WeaponDamageMultiplier;
 			}
 
 			UGameplayStatics::ApplyDamage(
 				OtherActor,
-				HitDamage,
+				Damage,
 				HitEnemy->GetController(),
 				Owner,
 				UDamageType::StaticClass());
@@ -183,11 +188,12 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 				UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 					GetWorld(),
 					ImpactParticles,
-					Hit.Location);
+					Hit.Location,
+					Hit.ImpactPoint.Rotation());
 			}
 		}
 		
     }
-    Destroy();
+    Destroy(true);
 }
 

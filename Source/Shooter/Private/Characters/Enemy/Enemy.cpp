@@ -231,7 +231,7 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	}
 	if (ImpactParticles)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticles, HitResult.Location, FRotator(0.f));
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticles, HitResult.Location, HitResult.ImpactNormal.Rotation());
 	}
 }
 

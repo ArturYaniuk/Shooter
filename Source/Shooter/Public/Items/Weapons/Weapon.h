@@ -77,10 +77,10 @@ struct FWeaponDataTable : public FTableRowBase
 	UTexture2D* CrosshairsRight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
+	float DamageMultiplier;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CritPointDamage;
+	float CritPointDamageMultiplier;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EProjectileType ProjectileType;
@@ -119,8 +119,8 @@ public:
 	FORCEINLINE UParticleSystem* GetBeamParticle() const { return BeamParticles; }
 	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
 
-	FORCEINLINE float GetDamage() const { return Damage; }
-	FORCEINLINE float GetCritPointDamage() const { return CritPointDamage; }
+	FORCEINLINE float GetDamageMultiplier() const { return DamageMultiplier; }
+	FORCEINLINE float GetCritPointDamageMultiplier() const { return CritPointDamageMultiplier; }
 
 	FORCEINLINE EProjectileType GetProjectileType() const { return ProjectileType; }
 
@@ -203,11 +203,11 @@ private:
 	UTexture2D* CrosshairsRight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
-	float Damage;
+	float DamageMultiplier;
 
 	/** Amount of damage when a bullet hits the head */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
-	float CritPointDamage;
+	float CritPointDamageMultiplier;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EProjectileType ProjectileType;

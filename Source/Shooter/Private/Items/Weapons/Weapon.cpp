@@ -112,8 +112,8 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			CrosshairsLeft = WeaponDataRow->CrosshairsLeft;
 			CrosshairsRight = WeaponDataRow->CrosshairsRight;
 
-			Damage = WeaponDataRow->Damage;
-			CritPointDamage = WeaponDataRow->CritPointDamage;
+			DamageMultiplier = WeaponDataRow->DamageMultiplier;
+			CritPointDamageMultiplier = WeaponDataRow->CritPointDamageMultiplier;
 			ProjectileType = WeaponDataRow->ProjectileType;
 		}
 	}
