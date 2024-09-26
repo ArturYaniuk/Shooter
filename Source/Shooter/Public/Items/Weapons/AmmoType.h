@@ -8,3 +8,14 @@ enum class EAmmoType : uint8
 
 	EAT_MAX UMETA(DisplayName = "DefaultMax")
 };
+
+
+UENUM(BlueprintType)
+enum class EProjectileType : uint8
+{
+	EPT_Default UMETA(DisplayName = "Default"),
+	EPT_First UMETA(DisplayName = "First"),
+	EPT_Second UMETA(DisplayName = "Second"),
+	EPT_Something UMETA(DisplayName = "Someting")
+
+};

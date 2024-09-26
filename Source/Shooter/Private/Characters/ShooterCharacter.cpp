@@ -17,6 +17,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
 
+
 AShooterCharacter::AShooterCharacter() :
 	//Fire
 	bShouldFire(true),
@@ -36,11 +37,11 @@ AShooterCharacter::AShooterCharacter() :
 	bSprinting(false),
 	bCrouching(false),
 	//Aiming setup
-	CameraCurrentFOV(0.f),
 	ZoomInterpSpeed(0.f),
 	bAiming(false),	
 	CameraDefaultFOV(0.f),
 	CameraZoomedFOV(60.f),
+	CameraCurrentFOV(0.f),
 	//Camera setup
 	DefaultCameraPosition(0.0f, 0.0f, 35.0f),
 	CrouchCameraPosition(0.0f, 0.0f, 0.0f),
@@ -253,7 +254,7 @@ void AShooterCharacter::FireWeapon()
 	if (WeaponHasAmmo())
 	{
 		PlayFireSound();
-		SendBullet();
+		SpawnProjectile();
 		PlayGunFireMontage();
 		EquippedWeapon->DecrementAmmo();
 
@@ -364,7 +365,7 @@ void AShooterCharacter::ChangeSpeed()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
-
+/*
 bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
 {
 	FVector OutBeamLocation;
@@ -400,6 +401,8 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 
 	return true;
 }
+
+*/
 
 void AShooterCharacter::FireButtonPressed()
 {
@@ -457,85 +460,6 @@ void AShooterCharacter::PlayFireSound()
 	if (EquippedWeapon->GetFireSound())
 	{
 		UGameplayStatics::PlaySound2D(this, EquippedWeapon->GetFireSound());
-	}
-}
-
-void AShooterCharacter::SendBullet()
-{
-	// Send bullet
-	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
-	if (BarrelSocket)
-	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
-
-		if (EquippedWeapon->GetMuzzleFash())
-		{
-			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
-		}
-
-		FHitResult BeamHitResult;
-
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
-
-		if (bBeamEnd)
-		{
-			// Does hit Actor implement BulletHitInterface?
-			if (BeamHitResult.GetActor())
-			{
-				IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.GetActor());
-				if (BulletHitInterface)
-				{
-					BulletHitInterface->BulletHit_Implementation(BeamHitResult);
-				}
-
-				AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
-				if (HitEnemy)
-				{
-
-					float HitDamage = EquippedWeapon->GetDamage();
-					if (BeamHitResult.BoneName.ToString() == HitEnemy->GetCritBone())
-					{
-						HitDamage = EquippedWeapon->GetCritPointDamage();
-					}
-					else
-					{
-						HitDamage = EquippedWeapon->GetDamage();
-					}
-
-						UGameplayStatics::ApplyDamage(
-							BeamHitResult.GetActor(),
-							HitDamage,
-							GetController(),
-							this,
-							UDamageType::StaticClass());
-
-				}
-			}
-					
-			
-			else
-			{
-				// Spawn default particles
-				if (ImpactParticles)
-				{
-					UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-						GetWorld(),
-						ImpactParticles,
-						BeamHitResult.Location);
-				}
-			}
-
-
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-				GetWorld(),
-				BeamParticles,
-				SocketTransform);
-			if (Beam)
-			{
-				Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
-			}
-		}
 	}
 }
 
@@ -821,6 +745,35 @@ void AShooterCharacter::GrabClip()
 void AShooterCharacter::ReleaseClip()
 {
 	EquippedWeapon->SetMovingClip(false);
+}
+
+void AShooterCharacter::SpawnProjectile()
+{
+	// Send bullet
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+
+		if (EquippedWeapon->GetMuzzleFash())
+		{
+			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
+		}
+
+	//	FHitResult BeamHitResult;
+
+	//	bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), this->GetViewRotation(), SpawnParams);
+
+		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector(), EquippedWeapon->GetProjectileType(), EquippedWeapon->GetDamageMultiplier(), EquippedWeapon->GetCritPointDamageMultiplier());
+				
+	}
 }
 
 void AShooterCharacter::ResetEquipSoundTimer()

@@ -51,6 +51,12 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UNiagaraSystem* MuzzleFlash;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UNiagaraSystem* ImpactParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystem* BeamParticle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundCue* FireSound;
@@ -71,10 +77,13 @@ struct FWeaponDataTable : public FTableRowBase
 	UTexture2D* CrosshairsRight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
+	float DamageMultiplier;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CritPointDamage;
+	float CritPointDamageMultiplier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EProjectileType ProjectileType;
 };
 /**
  * 
@@ -106,10 +115,14 @@ public:
 	FORCEINLINE void SetMovingClip(bool Move) { bMovingClip = Move; }
 	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
 	FORCEINLINE UNiagaraSystem* GetMuzzleFash() const { return MuzzleFlash; }
+	FORCEINLINE UNiagaraSystem* GetImpactParticle() const { return DefaultImpactParticle; }
+	FORCEINLINE UParticleSystem* GetBeamParticle() const { return BeamParticles; }
 	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
 
-	FORCEINLINE float GetDamage() const { return Damage; }
-	FORCEINLINE float GetCritPointDamage() const { return CritPointDamage; }
+	FORCEINLINE float GetDamageMultiplier() const { return DamageMultiplier; }
+	FORCEINLINE float GetCritPointDamageMultiplier() const { return CritPointDamageMultiplier; }
+
+	FORCEINLINE EProjectileType GetProjectileType() const { return ProjectileType; }
 
 	void ReloadAmmo(int32 Amount);
 
@@ -165,6 +178,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	UNiagaraSystem* MuzzleFlash;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
+	UNiagaraSystem* DefaultImpactParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BeamParticles;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	USoundCue* FireSound;
 
@@ -184,9 +203,12 @@ private:
 	UTexture2D* CrosshairsRight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
-	float Damage;
+	float DamageMultiplier;
 
 	/** Amount of damage when a bullet hits the head */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
-	float CritPointDamage;
+	float CritPointDamageMultiplier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	EProjectileType ProjectileType;
 };

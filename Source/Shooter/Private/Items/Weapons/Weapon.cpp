@@ -19,7 +19,8 @@ AWeapon::AWeapon() :
 	WeaponType(EWeaponType::EWT_SubmachineGun),
 	AmmoType(EAmmoType::EAT_9mm),
 	ReloadMontageSection(FName(TEXT("Reload"))),
-	ClipBoneName(TEXT("b_gun_mag"))
+	ClipBoneName(TEXT("b_gun_mag")),
+	ProjectileType(EProjectileType::EPT_Default)
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -102,6 +103,8 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			GetItemMesh()->SetAnimInstanceClass(WeaponDataRow->AnimBP);
 			AutoFireRate = WeaponDataRow->AutoFireRate;
 			MuzzleFlash = WeaponDataRow->MuzzleFlash;
+			DefaultImpactParticle = WeaponDataRow->ImpactParticle;
+			BeamParticles = WeaponDataRow->BeamParticle;
 			FireSound = WeaponDataRow->FireSound;
 			CrosshairsMiddle = WeaponDataRow->CrosshairsMiddle;
 			CrosshairsTop = WeaponDataRow->CrosshairsTop;
@@ -109,8 +112,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			CrosshairsLeft = WeaponDataRow->CrosshairsLeft;
 			CrosshairsRight = WeaponDataRow->CrosshairsRight;
 
-			Damage = WeaponDataRow->Damage;
-			CritPointDamage = WeaponDataRow->CritPointDamage;
+			DamageMultiplier = WeaponDataRow->DamageMultiplier;
+			CritPointDamageMultiplier = WeaponDataRow->CritPointDamageMultiplier;
+			ProjectileType = WeaponDataRow->ProjectileType;
 		}
 	}
 
