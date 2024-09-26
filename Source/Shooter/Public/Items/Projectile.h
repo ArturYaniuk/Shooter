@@ -142,4 +142,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile Properties", meta = (AllowPrivateAccess = "true"))
 	float WeaponCritDamageMultiplier;
+
+	FString CritBone;
 };

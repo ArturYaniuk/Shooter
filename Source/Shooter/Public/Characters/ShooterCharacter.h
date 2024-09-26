@@ -25,6 +25,8 @@ class SHOOTER_API AShooterCharacter : public ACharacter
 
 public:
 	AShooterCharacter();
+	//Take combat damage
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -286,6 +288,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AProjectile> ProjectileClass;
 
+	//Character Health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float Health;
+
+	//Character Max Health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float MaxHealth;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FString CritBone;
+
 public:
 
 	FORCEINLINE UCameraComponent* GetShooterCameraComponent() const { return ShooterCameraComponent; }
@@ -299,7 +312,7 @@ public:
 	FORCEINLINE ECombatState GetCombatState() { return CombatState; }
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
 	FORCEINLINE bool GetCrouching() const { return bCrouching; }
-
+	FORCEINLINE FString GetCritBone() const { return CritBone; }
 
 	void StartEquipSoundTimer();
 
