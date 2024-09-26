@@ -102,7 +102,6 @@ void AProjectile::TakeSpawnProperties(EProjectileType LocalProjectileType, float
 			CritDamage = ProjectileDataRow->CritDamage;
 		}
 
-
 		CollisionComponent->InitCapsuleSize(CollisionRadius, CollisionHalfHeight);
 		ProjectileMovementComponent->InitialSpeed = InitialSpeed;
 		ProjectileMovementComponent->MaxSpeed = MaxSpeed;
@@ -154,12 +153,15 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 			BulletHitInterface->BulletHit_Implementation(Hit);
 		}
 
-		AEnemy* HitEnemy = Cast<AEnemy>(OtherActor);
+		auto HitEnemy = Cast<APawn>(OtherActor);
 		if (HitEnemy)
 		{
-		
+			auto ShooterCharacterCritBone = Cast<AShooterCharacter>(OtherActor);
+			auto EnemyCritBone = Cast<AEnemy>(OtherActor);
+			if (Hit.GetActor() == ShooterCharacterCritBone)  CritBone = ShooterCharacterCritBone->GetCritBone();
+			if (Hit.GetActor() == EnemyCritBone)  CritBone = EnemyCritBone->GetCritBone();
 
-			if (Hit.BoneName.ToString() == HitEnemy->GetCritBone())
+			if (Hit.BoneName.ToString() == CritBone)
 			{
 				Damage = CritDamage * WeaponCritDamageMultiplier;
 				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, TEXT("HEADSHOT"));

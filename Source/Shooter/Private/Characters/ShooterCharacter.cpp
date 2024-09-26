@@ -57,7 +57,10 @@ AShooterCharacter::AShooterCharacter() :
 	CharacterState(ECharacterState::ECS_Unequipped),
 	//Sounds
 	bShouldPlayEquipSound(true),
-	EquipSoundResetTime(0.2f)
+	EquipSoundResetTime(0.2f),
+	//Character health
+	Health(100.f),
+	MaxHealth(100.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -73,6 +76,19 @@ AShooterCharacter::AShooterCharacter() :
 
 	//Create Hand Scene Component
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
+}
+
+float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (Health - DamageAmount <= 0.f)
+	{
+		Health = 0.f;
+	}
+	else
+	{
+		Health -= DamageAmount;
+	}
+	return DamageAmount;
 }
 
 void AShooterCharacter::BeginPlay()
