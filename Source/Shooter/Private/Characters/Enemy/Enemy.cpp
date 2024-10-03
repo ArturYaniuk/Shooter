@@ -26,7 +26,8 @@ AEnemy::AEnemy() :
 	bStunned(false),
 	StunChance(0.5f),
 	bInAttackRange(false),
-	bAlive(true)
+	bAlive(true),
+	bShoudUseAnimOffset(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -230,6 +231,7 @@ void AEnemy::Attack()
 
 	}
 }
+
 
 void AEnemy::ResetHitReactTimer()
 {

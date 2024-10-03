@@ -72,6 +72,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Attack();
 
+
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
@@ -161,6 +162,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EProjectileType ProjectileType;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AnimOffset, meta = (AllowPrivateAccess = "true"))
+	bool bShoudUseAnimOffset;
+
 
 	//TODO: different attack animation section
 
@@ -178,4 +182,6 @@ public:
 
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
+	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
+
 };

@@ -50,3 +50,5 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Turn, meta = (AllowPrivateAccess = "true"))
 	float Pitch;
 };
+
+
