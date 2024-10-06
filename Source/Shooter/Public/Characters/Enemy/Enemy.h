@@ -11,6 +11,7 @@
 #include "NiagaraComponent.h"
 #include "items/Projectile.h"
 #include "items/Weapons/AmmoType.h"
+#include "Perception/PawnSensingComponent.h"
 
 #include "Enemy.generated.h"
 
@@ -30,20 +31,6 @@ protected:
 	void Die();
 
 	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
-
-	UFUNCTION()
-	void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, 
-		int32 OtherBodyIndex,
-		bool bFromSweep, 
-		const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex);
 
 
 	UFUNCTION(BlueprintCallable)
@@ -71,6 +58,10 @@ protected:
 	
 	UFUNCTION(BlueprintCallable)
 	void Attack();
+
+	UFUNCTION()  
+	void SeePlayer(APawn* pawn);
+
 
 
 private:
@@ -120,14 +111,6 @@ private:
 
 	class AEnemyController* EnemyController;
 
-	//Overlap sphere for when the enemy becomes hostile
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USphereComponent* AgrosSphere;
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	bool bInAgroRange;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bStunned;
 
@@ -139,7 +122,7 @@ private:
 	bool bInAttackRange;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	USphereComponent* CombatRangeSphere;
+	class USphereComponent* CombatRangeSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* AttackMontage;
@@ -164,7 +147,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AnimOffset, meta = (AllowPrivateAccess = "true"))
 	bool bShoudUseAnimOffset;
+	 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Awareness, meta = (AllowPrivateAccess = "true"))
+	class UPawnSensingComponent* PawnSensor;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bSeePlayer;
 
 	//TODO: different attack animation section
 

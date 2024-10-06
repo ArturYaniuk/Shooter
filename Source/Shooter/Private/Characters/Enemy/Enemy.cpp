@@ -13,6 +13,7 @@
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Perception/PawnSensingComponent.h"
 #include "./Characters/ShooterCharacter.h"
 
 // Sets default values
@@ -22,30 +23,31 @@ AEnemy::AEnemy() :
 	bCanHitReact(true),
 	HitReactTimeMin(0.5f),
 	HitReactTimeMax(1.0f),
-	bInAgroRange(false),
 	bStunned(false),
 	StunChance(0.5f),
 	bInAttackRange(false),
 	bAlive(true),
-	bShoudUseAnimOffset(false)
+	bShoudUseAnimOffset(false),
+	bSeePlayer(false)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	AgrosSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
-	AgrosSphere->SetupAttachment(GetRootComponent());
 
 	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRange"));
 	CombatRangeSphere->SetupAttachment(GetRootComponent());
+
+	PawnSensor = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
+
+	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
+	PawnSensor->SetSensingUpdatesEnabled(true);
+
 }
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
-	AgrosSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroSphereOverlap);
-	AgrosSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::AgroSphereEndOverlap);
 
 	CombatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::CombatRangeOverlap);
 	CombatRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::CombatRangeEndOverlap);
@@ -74,10 +76,6 @@ void AEnemy::BeginPlay()
 		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("SecondPatrolPoint"), WorldSecondPatrolPoint);
 		EnemyController->RunBehaviorTree(BehaviorTree);
 	}
-
-	
-	
-
 }
 
 void AEnemy::Die()
@@ -105,6 +103,7 @@ void AEnemy::Die()
 	bAlive = false;
 }
 
+
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 {
 	if (bCanHitReact)
@@ -121,35 +120,8 @@ void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 
 		GetWorldTimerManager().SetTimer(HitReactTimer, this, &AEnemy::ResetHitReactTimer, HitReactTime);
 	}
-	
 }
 
-void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor == nullptr) return;
-	
-	auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
-
-	if (ShooterCharacter)
-	{
-		bInAgroRange = true;
-		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), true);
-	}
-}
-
-void AEnemy::AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherActor == nullptr) return;
-
-	auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
-
-	if (ShooterCharacter)
-	{
-		bInAgroRange = false;
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), false);
-	}
-}
 
 
 void AEnemy::SetStunned(bool Stunned)
@@ -231,6 +203,21 @@ void AEnemy::Attack()
 
 	}
 }
+
+void AEnemy::SeePlayer(APawn* pawn)
+{
+	if (pawn == nullptr) return;
+
+	auto ShooterCharacter = Cast<AShooterCharacter>(pawn);
+
+	if (ShooterCharacter)
+	{
+		bSeePlayer = true;
+		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), true);
+	}
+}
+
 
 
 void AEnemy::ResetHitReactTimer()
