@@ -12,7 +12,7 @@
 #include "items/Projectile.h"
 #include "items/Weapons/AmmoType.h"
 #include "Perception/PawnSensingComponent.h"
-
+#include "EnemyState.h"
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -55,12 +55,16 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void Attack();
 
-	UFUNCTION()  
+	UFUNCTION()
 	void SeePlayer(APawn* pawn);
+
+	virtual void PostInitializeComponents() override;
+
+	
 
 
 
@@ -132,7 +136,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FName DeathB;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bAlive;
 
@@ -147,14 +151,19 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AnimOffset, meta = (AllowPrivateAccess = "true"))
 	bool bShoudUseAnimOffset;
-	 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Awareness, meta = (AllowPrivateAccess = "true"))
-	class UPawnSensingComponent* PawnSensor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bSeePlayer;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Awareness, meta = (AllowPrivateAccess = "true"))
+	class UPawnSensingComponent* PawnSensor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PlayerPoint;
 	//TODO: different attack animation section
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	EEnemyState EnemyState;
 
 public:	
 	// Called every frame

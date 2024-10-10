@@ -28,7 +28,8 @@ AEnemy::AEnemy() :
 	bInAttackRange(false),
 	bAlive(true),
 	bShoudUseAnimOffset(false),
-	bSeePlayer(false)
+	bSeePlayer(false),
+	EnemyState(EEnemyState::EES_Passive)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -38,9 +39,6 @@ AEnemy::AEnemy() :
 	CombatRangeSphere->SetupAttachment(GetRootComponent());
 
 	PawnSensor = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
-
-	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
-	PawnSensor->SetSensingUpdatesEnabled(true);
 
 }
 
@@ -98,9 +96,10 @@ void AEnemy::Die()
 		break;
 
 	}
+	EnemyState = EEnemyState::EES_Death;
 
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Death"), true);
-	bAlive = false;
+	EnemyController->GetBlackboardComponent()->SetValueAsEnum(TEXT("EnemyState"), EnemyState);
+
 }
 
 
@@ -204,18 +203,26 @@ void AEnemy::Attack()
 	}
 }
 
-void AEnemy::SeePlayer(APawn* pawn)
+void AEnemy::SeePlayer(APawn* Pawn)
 {
-	if (pawn == nullptr) return;
+	if (Pawn == nullptr) return;
 
-	auto ShooterCharacter = Cast<AShooterCharacter>(pawn);
+	auto ShooterCharacter = Cast<AShooterCharacter>(Pawn);
 
 	if (ShooterCharacter)
 	{
-		bSeePlayer = true;
-		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), ShooterCharacter);
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Pawn->GetActorLocation());
+		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Pawn);
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), true);
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), PawnSensor->HasLineOfSightTo(Pawn));
 	}
+}
+
+void AEnemy::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
+
 }
 
 
