@@ -12,7 +12,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Perception/PawnSensingComponent.h"
 #include "./Characters/ShooterCharacter.h"
 
@@ -74,13 +73,13 @@ void AEnemy::BeginPlay()
 		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("SecondPatrolPoint"), WorldSecondPatrolPoint);
 		EnemyController->RunBehaviorTree(BehaviorTree);
 	}
+	if (EnemyController) ChangeEnemyState();
 }
 
 void AEnemy::Die()
 {
 	//const int32 Section = FMath::RandRange(0, 1); //uncomment for random death animation
 	const int32 Section = 0;
-
 	switch (Section)
 	{
 	case 0:
@@ -97,9 +96,8 @@ void AEnemy::Die()
 
 	}
 	EnemyState = EEnemyState::EES_Death;
-
-	EnemyController->GetBlackboardComponent()->SetValueAsEnum(TEXT("EnemyState"), EnemyState);
-
+	ChangeEnemyState();
+	bAlive = false;
 }
 
 
@@ -143,6 +141,8 @@ void AEnemy::CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		if (EnemyController)
 		{
 			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), true);
+			EnemyState = EEnemyState::EES_Attacking;
+			if (bAlive) ChangeEnemyState();
 		}
 	}
 	
@@ -215,6 +215,8 @@ void AEnemy::SeePlayer(APawn* Pawn)
 		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Pawn);
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), true);
 		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), PawnSensor->HasLineOfSightTo(Pawn));
+		EnemyState = EEnemyState::EES_MoveToTarget;
+		ChangeEnemyState();
 	}
 }
 
@@ -222,6 +224,38 @@ void AEnemy::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
+
+}
+
+void AEnemy::ChangeEnemyState()
+{
+	FString localState = "Passive";
+	switch (EnemyState)
+	{
+	case EEnemyState::EES_Death:
+		localState = "Death";
+		break;
+	case EEnemyState::EES_Stunned:
+		localState = "Stunned";
+		break;
+	case EEnemyState::EES_Passive:
+		localState = "Passive";
+		break;
+	case EEnemyState::EES_Searching:
+		localState = "Searching";
+		break;
+	case EEnemyState::EES_Attacking:
+		localState = "Attacking";
+		break;
+	case EEnemyState::EES_MoveToTarget:
+		localState = "MoveToTarget";
+		break;
+	case EEnemyState::EES_MAX:
+		break;
+	default:
+		break;
+	}
+	EnemyController->GetBlackboardComponent()->SetValueAsString(TEXT("EnemyState"), localState);
 
 }
 
@@ -255,27 +289,37 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	if (ImpactParticles)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticles, HitResult.Location, HitResult.ImpactNormal.Rotation());
+		if (EnemyState == EEnemyState::EES_Passive)
+		{
+			EnemyState = EEnemyState::EES_Searching;
+			ChangeEnemyState();
+			EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), HitResult.TraceStart);
+
+
+		}
+		
 	}
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-
 	if (Health - DamageAmount <- 0.f)
 	{
 		Health = 0.f;
-		if (bAlive)		Die();
+		
+		if (bAlive) Die();
 	}
 	else
 	{
 		Health -= DamageAmount;
 		const float Stunned = FMath::FRandRange(0.f, 1.f);
 
-		if (Stunned <= StunChance)
+		if (Stunned <= StunChance && bAlive)
 		{
 			PlayHitMontage(FName("HitReactFront"));
 			SetStunned(true);
 		}
+		
 	
 	}
 	return DamageAmount;

@@ -64,7 +64,7 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
-	
+	void ChangeEnemyState();
 
 
 
