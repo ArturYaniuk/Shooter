@@ -15,6 +15,7 @@
 #include "EnemyState.h"
 #include "Enemy.generated.h"
 
+
 UCLASS()
 class SHOOTER_API AEnemy : public ACharacter, public IBulletHitInterface
 {
@@ -66,7 +67,9 @@ protected:
 
 	void ChangeEnemyState();
 
-
+	void SetMoveToState();
+	
+	void SetPassiveState();
 
 private:
 
@@ -165,6 +168,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	EEnemyState EnemyState;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class AShooterCharacter* Target;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

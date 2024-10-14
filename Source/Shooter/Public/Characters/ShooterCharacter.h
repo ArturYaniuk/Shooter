@@ -94,7 +94,6 @@ protected:
 	bool WeaponHasAmmo();
 
 	void PlayFireSound();
-	void SendBullet();
 	void PlayGunFireMontage();
 
 	void ReloadButtonPressed();

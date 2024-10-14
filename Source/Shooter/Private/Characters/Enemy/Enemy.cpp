@@ -74,6 +74,8 @@ void AEnemy::BeginPlay()
 		EnemyController->RunBehaviorTree(BehaviorTree);
 	}
 	if (EnemyController) ChangeEnemyState();
+
+	Target = Cast<AShooterCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 }
 
 void AEnemy::Die()
@@ -205,26 +207,13 @@ void AEnemy::Attack()
 
 void AEnemy::SeePlayer(APawn* Pawn)
 {
-	if (Pawn == nullptr) return;
-
-	auto ShooterCharacter = Cast<AShooterCharacter>(Pawn);
-
-	if (ShooterCharacter)
-	{
-		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Pawn->GetActorLocation());
-		EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Pawn);
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAgroRange"), true);
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), PawnSensor->HasLineOfSightTo(Pawn));
-		EnemyState = EEnemyState::EES_MoveToTarget;
-		ChangeEnemyState();
-	}
+	//For future
+	return;
 }
 
 void AEnemy::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
-
 }
 
 void AEnemy::ChangeEnemyState()
@@ -259,6 +248,22 @@ void AEnemy::ChangeEnemyState()
 
 }
 
+void AEnemy::SetMoveToState()
+{
+	EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Target->GetActorLocation());
+	EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Target);
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
+	EnemyState = EEnemyState::EES_MoveToTarget;
+	ChangeEnemyState();
+}
+
+void AEnemy::SetPassiveState()
+{
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
+	EnemyState = EEnemyState::EES_Passive;
+	ChangeEnemyState();
+}
+
 
 
 void AEnemy::ResetHitReactTimer()
@@ -270,6 +275,11 @@ void AEnemy::ResetHitReactTimer()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (Target != nullptr)	bSeePlayer = PawnSensor->HasLineOfSightTo(Target->GetOwner());
+
+	if (bSeePlayer) SetMoveToState();
+	else SetPassiveState();
 
 }
 
@@ -289,11 +299,11 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	if (ImpactParticles)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticles, HitResult.Location, HitResult.ImpactNormal.Rotation());
-		if (EnemyState == EEnemyState::EES_Passive)
+		if (EnemyState == EEnemyState::EES_Passive && Target != nullptr)
 		{
 			EnemyState = EEnemyState::EES_Searching;
 			ChangeEnemyState();
-			EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), HitResult.TraceStart);
+			EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Target->GetActorLocation());
 
 
 		}
