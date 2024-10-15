@@ -16,6 +16,8 @@
 #include "Enemy.generated.h"
 
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateChange, EEnemyState, EnemyState);
+
 UCLASS()
 class SHOOTER_API AEnemy : public ACharacter, public IBulletHitInterface
 {
@@ -64,8 +66,6 @@ protected:
 	void SeePlayer(APawn* pawn);
 
 	virtual void PostInitializeComponents() override;
-
-	void ChangeEnemyState();
 
 	void SetMoveToState();
 	
@@ -170,6 +170,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class AShooterCharacter* Target;
+
+	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
+	FOnEnemyStateChange OnEnemyStateChange;
 	
 public:	
 	// Called every frame
@@ -186,5 +189,6 @@ public:
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
+	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 
 };
