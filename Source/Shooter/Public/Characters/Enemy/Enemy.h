@@ -69,7 +69,7 @@ protected:
 
 	void SetMoveToState();
 	
-	void SetPassiveState();
+	void SetState(EEnemyState newState);
 
 private:
 

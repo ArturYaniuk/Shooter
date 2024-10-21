@@ -133,7 +133,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* ShooterCameraComponent;
 
-
 	UPROPERTY(VisibleInstanceOnly)
 	AItem* OverlappingItem;
 
@@ -154,7 +153,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	bool bFireButtonPressed;
-
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
 	float CrosshairSpreadMultiplier;
