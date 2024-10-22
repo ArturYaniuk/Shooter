@@ -28,7 +28,8 @@ AEnemy::AEnemy() :
 	bAlive(true),
 	bShoudUseAnimOffset(false),
 	bSeePlayer(false),
-	EnemyState(EEnemyState::EES_Passive)
+	EnemyState(EEnemyState::EES_Passive),
+	PreviousState(EnemyState)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -99,6 +100,7 @@ void AEnemy::Die()
 	}
 	SetState(EEnemyState::EES_Death);
 	bAlive = false;
+	EnemyController->StopMovement();
 }
 
 
@@ -127,9 +129,20 @@ void AEnemy::SetStunned(bool Stunned)
 	bStunned = Stunned;
 	if (EnemyController)
 	{
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Stunned"), Stunned);
+		EnemyController->StopMovement();
+		if (EnemyState != EEnemyState::EES_Stunned )  PreviousState = EnemyState;
+		SetState(EEnemyState::EES_Stunned);
+
+		const float StunTime{ FMath::FRandRange(HitReactTimeMin, HitReactTimeMax) };
+
+		Delegate.BindUFunction(this, "SetState", PreviousState);
+
+		GetWorldTimerManager().SetTimer(StunTimer, Delegate, StunTime, false);
+		
 	}
 }
+
+
 
 void AEnemy::CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -141,7 +154,7 @@ void AEnemy::CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 		bInAttackRange = true;
 		if (EnemyController)
 		{
-			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), true);
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), bInAttackRange);
 			SetState(EEnemyState::EES_Attacking);
 		}
 	}
@@ -158,8 +171,10 @@ void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 		bInAttackRange = false;
 		if (EnemyController)
 		{
-			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), false);
+			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), bInAttackRange);
 		}
+		SetState(EEnemyState::EES_MoveToTarget);
+		SeePlayer(ShooterCharacter);
 	}
 }
 
@@ -205,8 +220,14 @@ void AEnemy::Attack()
 
 void AEnemy::SeePlayer(APawn* Pawn)
 {
-	EnemyController->MoveToActor(Target);
+	if (!bAlive || bStunned || EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("bAttacking"))) return;
+	EnemyController->MoveToActor(Target, 500.0f);
 	SetMoveToState();
+	if (bInAttackRange)
+	{
+		EnemyController->StopMovement();
+		SetState(EEnemyState::EES_Attacking);
+	}
 	return;
 }
 
@@ -247,8 +268,8 @@ void AEnemy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (Target != nullptr)	bSeePlayer = PawnSensor->HasLineOfSightTo(Target);
-	if (!bSeePlayer && EnemyState != EEnemyState::EES_Searching && EnemyState != EEnemyState::EES_MoveToTarget) SetState(EEnemyState::EES_Passive);
-	if (!bSeePlayer && EnemyState == EEnemyState::EES_MoveToTarget) SetState(EEnemyState::EES_Searching);
+//	if (!bSeePlayer && EnemyState != EEnemyState::EES_Searching && EnemyState != EEnemyState::EES_MoveToTarget && EnemyState != EEnemyState::EES_Attacking) SetState(EEnemyState::EES_Passive);
+	if (!bSeePlayer && (EnemyState == EEnemyState::EES_MoveToTarget || EnemyState == EEnemyState::EES_Attacking || EnemyState == EEnemyState::EES_Stunned)) SetState(EEnemyState::EES_Searching);
 
 }
 

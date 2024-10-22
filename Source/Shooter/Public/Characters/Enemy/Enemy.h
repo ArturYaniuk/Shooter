@@ -69,7 +69,10 @@ protected:
 
 	void SetMoveToState();
 	
+	UFUNCTION()
 	void SetState(EEnemyState newState);
+
+
 
 private:
 
@@ -97,6 +100,10 @@ private:
 	UAnimMontage* HitMontage;
 
 	FTimerHandle HitReactTimer;
+
+	FTimerHandle StunTimer;
+
+	FTimerDelegate Delegate;
 
 	bool bCanHitReact;
 
@@ -168,11 +175,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	EEnemyState EnemyState;
 
+	EEnemyState PreviousState;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class AShooterCharacter* Target;
 
 	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FOnEnemyStateChange OnEnemyStateChange;
+
+
 	
 public:	
 	// Called every frame
