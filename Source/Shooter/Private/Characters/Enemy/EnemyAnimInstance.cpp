@@ -47,6 +47,9 @@ void UEnemyAnimInstance::TurnInPlace()
 
 	Pitch = Enemy->GetBaseAimRotation().Pitch;
 
+	if (GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Cyan, FString::Printf(TEXT("Enemy->GetActorRotation().Yaw: %f"), Enemy->GetActorRotation().Yaw));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Cyan, FString::Printf(TEXT("Enemy->GetBaseAimRotation().Pitch: %f"), Enemy->GetBaseAimRotation().Pitch));
+
 	if (Speed > 0)
 	{
 		RootYawOffset = 0.f;
