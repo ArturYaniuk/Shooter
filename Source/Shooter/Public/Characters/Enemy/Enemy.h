@@ -201,5 +201,6 @@ public:
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
 	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
+	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
 
 };

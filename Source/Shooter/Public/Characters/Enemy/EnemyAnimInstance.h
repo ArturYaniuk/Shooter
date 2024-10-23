@@ -34,6 +34,8 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class AEnemy* Enemy;
 
+	class AShooterCharacter* Target;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	float GroundSpeed;
 

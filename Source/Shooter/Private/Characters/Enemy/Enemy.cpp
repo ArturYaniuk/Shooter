@@ -174,7 +174,7 @@ void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), bInAttackRange);
 		}
 		SetState(EEnemyState::EES_MoveToTarget);
-		SeePlayer(ShooterCharacter);
+		SetMoveToState();
 	}
 }
 
@@ -269,8 +269,12 @@ void AEnemy::Tick(float DeltaTime)
 
 	if (Target != nullptr)	bSeePlayer = PawnSensor->HasLineOfSightTo(Target);
 //	if (!bSeePlayer && EnemyState != EEnemyState::EES_Searching && EnemyState != EEnemyState::EES_MoveToTarget && EnemyState != EEnemyState::EES_Attacking) SetState(EEnemyState::EES_Passive);
-	if (!bSeePlayer && (EnemyState == EEnemyState::EES_MoveToTarget || EnemyState == EEnemyState::EES_Attacking || EnemyState == EEnemyState::EES_Stunned)) SetState(EEnemyState::EES_Searching);
-
+	if (!bSeePlayer && (EnemyState == EEnemyState::EES_MoveToTarget || EnemyState == EEnemyState::EES_Attacking || EnemyState == EEnemyState::EES_Stunned))
+	{
+		SetState(EEnemyState::EES_Searching);
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bAttacking"), false);
+		StopAnimMontage();
+	}
 }
 
 // Called to bind functionality to input
