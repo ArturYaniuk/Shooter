@@ -381,44 +381,6 @@ void AShooterCharacter::ChangeSpeed()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
-/*
-bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
-{
-	FVector OutBeamLocation;
-
-	FHitResult CrosshairHitResult;
-	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
-
-	if (bCrosshairHit)
-	{
-	
-		OutBeamLocation = CrosshairHitResult.Location;
-	}
-	else 
-	{
-		
-	}
-
-
-	const FVector WeaponTraceStart{ MuzzleSocketLocation };
-	const FVector StartToEnd{ OutBeamLocation - WeaponTraceStart };
-	const FVector WeaponTraceEnd{ MuzzleSocketLocation + StartToEnd * 1.25f };
-	GetWorld()->LineTraceSingleByChannel(
-		OutHitResult,
-		WeaponTraceStart,
-		WeaponTraceEnd,
-		ECollisionChannel::ECC_Visibility);
-
-	if (!OutHitResult.bBlockingHit) 
-	{
-		OutHitResult.Location = OutBeamLocation;
-		return false;
-	}
-
-	return true;
-}
-
-*/
 
 void AShooterCharacter::FireButtonPressed()
 {

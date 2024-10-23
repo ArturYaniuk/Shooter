@@ -22,11 +22,13 @@ void AEnemyController::OnPossess(APawn* InPawn)
 
 	if (InPawn == nullptr) return;
 
+	
 	AEnemy* Enemy = Cast<AEnemy>(InPawn);
 	if (Enemy)
 	{
 		if (Enemy->GetBehaviorTree())
 		{
+			
 			BlackboardComponent->InitializeBlackboard(*(Enemy->GetBehaviorTree()->BlackboardAsset));
 		}
 	}

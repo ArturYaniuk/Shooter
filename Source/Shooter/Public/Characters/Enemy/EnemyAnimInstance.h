@@ -15,9 +15,16 @@ class SHOOTER_API UEnemyAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 public:
-
+	UEnemyAnimInstance();
 	UFUNCTION(BlueprintCallable)
 	void UpdateAnimationProperties(float DeltaTime);
+	virtual void NativeInitializeAnimation() override;
+	virtual void NativeUpdateAnimation(float DeltaTime) override;
+
+protected:
+
+
+	void TurnInPlace();
 
 private:
 	
@@ -26,4 +33,25 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	class AEnemy* Enemy;
+
+	class AShooterCharacter* Target;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	float GroundSpeed;
+
+	float EnemyYaw;
+
+	float EnemyYawLastFrame;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = YawOffset, meta = (AllowPrivateAccess = "true"))
+	float RootYawOffset;
+
+	float RotationCurve;
+
+	float RotationCurveLastFrame;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Turn, meta = (AllowPrivateAccess = "true"))
+	float Pitch;
 };
+
+

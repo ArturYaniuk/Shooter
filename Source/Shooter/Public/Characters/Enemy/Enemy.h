@@ -11,8 +11,12 @@
 #include "NiagaraComponent.h"
 #include "items/Projectile.h"
 #include "items/Weapons/AmmoType.h"
-
+#include "Perception/PawnSensingComponent.h"
+#include "EnemyState.h"
 #include "Enemy.generated.h"
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyStateChange, EEnemyState, EnemyState);
 
 UCLASS()
 class SHOOTER_API AEnemy : public ACharacter, public IBulletHitInterface
@@ -30,20 +34,6 @@ protected:
 	void Die();
 
 	void PlayHitMontage(FName Section, float PlayRate = 1.0f);
-
-	UFUNCTION()
-	void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, 
-		int32 OtherBodyIndex,
-		bool bFromSweep, 
-		const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void AgroSphereEndOverlap(UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex);
 
 
 	UFUNCTION(BlueprintCallable)
@@ -68,9 +58,21 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void Attack();
+
+	UFUNCTION()
+	void SeePlayer(APawn* pawn);
+
+	virtual void PostInitializeComponents() override;
+
+	void SetMoveToState();
+	
+	UFUNCTION()
+	void SetState(EEnemyState newState);
+
+
 
 private:
 
@@ -99,6 +101,10 @@ private:
 
 	FTimerHandle HitReactTimer;
 
+	FTimerHandle StunTimer;
+
+	FTimerDelegate Delegate;
+
 	bool bCanHitReact;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -119,14 +125,6 @@ private:
 
 	class AEnemyController* EnemyController;
 
-	//Overlap sphere for when the enemy becomes hostile
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USphereComponent* AgrosSphere;
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	bool bInAgroRange;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bStunned;
 
@@ -138,7 +136,7 @@ private:
 	bool bInAttackRange;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	USphereComponent* CombatRangeSphere;
+	class USphereComponent* CombatRangeSphere;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* AttackMontage;
@@ -148,7 +146,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FName DeathB;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bAlive;
 
@@ -161,9 +159,32 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EProjectileType ProjectileType;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AnimOffset, meta = (AllowPrivateAccess = "true"))
+	bool bShoudUseAnimOffset;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bSeePlayer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Awareness, meta = (AllowPrivateAccess = "true"))
+	class UPawnSensingComponent* PawnSensor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PlayerPoint;
 	//TODO: different attack animation section
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	EEnemyState EnemyState;
+
+	EEnemyState PreviousState;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class AShooterCharacter* Target;
+
+	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
+	FOnEnemyStateChange OnEnemyStateChange;
+
+
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -178,4 +199,8 @@ public:
 
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
+	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
+	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
+	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
+
 };
