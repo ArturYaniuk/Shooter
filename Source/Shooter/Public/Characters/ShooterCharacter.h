@@ -118,7 +118,7 @@ protected:
 
 	void CrouchButtonPressed();
 
-	void ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex);
+	void ExchangeInventoryItem(int32 NewItemIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void GrabClip();
@@ -127,6 +127,10 @@ protected:
 	void ReleaseClip();
 
 	void SpawnProjectile();
+
+	bool CanEquip(AWeapon* WeaponToEquip);
+
+	void PlayEquipMontage(UAnimMontage* Montage);
 
 private:
 
