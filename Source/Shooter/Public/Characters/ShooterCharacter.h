@@ -91,7 +91,7 @@ protected:
 	void AutoFireReset();
 
 	void InitializeAmmoMap();
-	bool WeaponHasAmmo();
+	bool WeaponHasAmmo(AWeapon* Weapon);
 
 	void PlayFireSound();
 	void PlayGunFireMontage();

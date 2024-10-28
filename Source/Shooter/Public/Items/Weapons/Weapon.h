@@ -84,6 +84,9 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EProjectileType ProjectileType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool WeaponIsTemp;
 };
 /**
  * 
@@ -123,6 +126,7 @@ public:
 	FORCEINLINE float GetCritPointDamageMultiplier() const { return CritPointDamageMultiplier; }
 
 	FORCEINLINE EProjectileType GetProjectileType() const { return ProjectileType; }
+	FORCEINLINE bool GetWeaponIsTemp() const { return WeaponIsTemp; }
 
 	void ReloadAmmo(int32 Amount);
 
@@ -211,4 +215,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EProjectileType ProjectileType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	bool WeaponIsTemp;
 };
