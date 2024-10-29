@@ -229,18 +229,16 @@ void AShooterCharacter::EKeyReleased()
 
 void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (!WeaponToEquip->GetWeaponIsTemp())
+	if (EquippedWeapon == nullptr)
 	{
-		if (EquippedWeapon == nullptr)
-		{
-			// -1 == no EquippedWeapon yet. No need to reverse the icon animation
-			EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
-		}
-		else
-		{
-			EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
-		}
+		// -1 == no EquippedWeapon yet. No need to reverse the icon animation
+		EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
 	}
+	else
+	{
+		EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
+	}
+
 
 	CharacterState = WeaponToEquip->GetWDCharacterState();
 	WeaponToEquip->Equip(GetMesh(), FName("RightHandSocket"));
@@ -372,18 +370,10 @@ void AShooterCharacter::FinishCrosshairBulletFire()
 
 void AShooterCharacter::ChangeSpeed()
 {
-	if (bSprinting && !bAiming)
-	{
-		CurrentSpeed = SprintSpeed;
-	}
-	else if (bAiming)
-	{
-		CurrentSpeed = DefaultSpeed;
-	}
-	else
-	{
-		CurrentSpeed = DefaultSpeed;
-	}
+	if (bSprinting && !bAiming)	CurrentSpeed = SprintSpeed;
+	else if (bAiming) CurrentSpeed = DefaultSpeed;
+	else CurrentSpeed = DefaultSpeed;
+	
 	GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
 
@@ -391,7 +381,6 @@ void AShooterCharacter::FireButtonPressed()
 {
 	bFireButtonPressed = true;
 	FireWeapon();
-	
 }
 
 void AShooterCharacter::FireButtonReleased()
@@ -683,28 +672,38 @@ void AShooterCharacter::ExchangeInventoryItem(int32 NewItemIndex)
 		NewWeapon->PlayEquipSound(this, true);
 		return;
 	}
+	
+	else if (EquippedWeapon->GetSlotIndex() == NewItemIndex && EquippedWeapon->GetWeaponIsTemp())  ExchangeWeapon(NewWeapon);
 
 	else if ((EquippedWeapon->GetSlotIndex() == NewItemIndex) || (Inventory[NewItemIndex] == nullptr) || CombatState != ECombatState::ECS_Unoccupied) return;
 
+	else ExchangeWeapon(NewWeapon);
+
+	
+}
+
+void AShooterCharacter::ExchangeWeapon(AWeapon* WeaponToExchange)
+{
+	if (EquippedWeapon->GetWeaponIsTemp()) DropWeapon();
 	else
 	{
 		OldEquippedWeapon = EquippedWeapon;
-		EquipWeapon(NewWeapon);
-
-		if (OldEquippedWeapon->GetItemState() == EItemState::EIS_Pickup || NewWeapon->GetItemState() == EItemState::EIS_Pickup) return;
-
 		OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
-		NewWeapon->SetItemState(EItemState::EIS_Equipped);
-
-		CombatState = ECombatState::ECS_Equipping;
-
-		PlayEquipMontage(EquipMontage);
-		NewWeapon->PlayEquipSound(this, true);
-
+		if (OldEquippedWeapon->GetItemState() == EItemState::EIS_Pickup) return;
 		ReloadWeapon(OldEquippedWeapon, true);
-		CharacterState = NewWeapon->GetWDCharacterState();
 	}
-	
+	EquipWeapon(WeaponToExchange);
+
+	if (WeaponToExchange->GetItemState() == EItemState::EIS_Pickup) return;
+
+	WeaponToExchange->SetItemState(EItemState::EIS_Equipped);
+
+	CombatState = ECombatState::ECS_Equipping;
+
+	PlayEquipMontage(EquipMontage);
+	WeaponToExchange->PlayEquipSound(this, true);
+
+	CharacterState = WeaponToExchange->GetWDCharacterState();
 }
 
 void AShooterCharacter::GrabClip()
@@ -757,21 +756,25 @@ void AShooterCharacter::SpawnProjectile()
 	}
 }
 
-bool AShooterCharacter::CanEquip(AWeapon* WeaponToEquip)
+void AShooterCharacter::EquipOrSwap(AWeapon* WeaponToEquip)
 {
 	if (WeaponToEquip->GetWeaponIsTemp())
 	{
 		if (WeaponHasAmmo(WeaponToEquip))
 		{
+			if (EquippedWeapon) EquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
+			PlayEquipMontage(EquipMontage);
 			EquipWeapon(WeaponToEquip);
-			return true;
+			return;
 		}
 	}
 	else if (Inventory.Num() < INVENTORY_CAPACITY)
 	{
 		WeaponToEquip->SetSlotIndex(Inventory.Num());
+		PlayEquipMontage(EquipMontage);
 		Inventory.Add(WeaponToEquip);
-		return true;
+		WeaponToEquip->SetItemState(EItemState::EIS_PickedUp);
+		return;
 	}
 	else
 	{
@@ -781,12 +784,13 @@ bool AShooterCharacter::CanEquip(AWeapon* WeaponToEquip)
 			{
 				EquipWeapon(WeaponToEquip);
 				Inventory[i] = WeaponToEquip;
-				return true;
+				WeaponToEquip->SetItemState(EItemState::EIS_PickedUp);
+				return;
 			}
 		}
 	}
 	
-	return false;
+	SwapWeapon(WeaponToEquip);
 }
 
 void AShooterCharacter::PlayEquipMontage(UAnimMontage* Montage)
@@ -853,15 +857,7 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 
 	if (OverlappingWeapon)
 	{	
-		
-		if (CanEquip(OverlappingWeapon)) OverlappingWeapon->SetItemState(EItemState::EIS_PickedUp);
-		
-
-		else {
-
-			SwapWeapon(OverlappingWeapon);
-			
-		}
+		EquipOrSwap(OverlappingWeapon);
 		Item->PlayEquipSound(this);
 	}
 

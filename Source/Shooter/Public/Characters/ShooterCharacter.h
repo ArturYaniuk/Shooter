@@ -120,6 +120,8 @@ protected:
 
 	void ExchangeInventoryItem(int32 NewItemIndex);
 
+	void ExchangeWeapon(AWeapon* WeaponToExchange);
+
 	UFUNCTION(BlueprintCallable)
 	void GrabClip();
 
@@ -128,7 +130,7 @@ protected:
 
 	void SpawnProjectile();
 
-	bool CanEquip(AWeapon* WeaponToEquip);
+	void EquipOrSwap(AWeapon* WeaponToEquip);
 
 	void PlayEquipMontage(UAnimMontage* Montage);
 
