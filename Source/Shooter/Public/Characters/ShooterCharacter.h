@@ -91,7 +91,7 @@ protected:
 	void AutoFireReset();
 
 	void InitializeAmmoMap();
-	bool WeaponHasAmmo();
+	bool WeaponHasAmmo(AWeapon* Weapon);
 
 	void PlayFireSound();
 	void PlayGunFireMontage();
@@ -118,7 +118,9 @@ protected:
 
 	void CrouchButtonPressed();
 
-	void ExchangeInventoryItem(int32 CurrentItemIndex, int32 NewItemIndex);
+	void ExchangeInventoryItem(int32 NewItemIndex);
+
+	void ExchangeWeapon(AWeapon* WeaponToExchange);
 
 	UFUNCTION(BlueprintCallable)
 	void GrabClip();
@@ -127,6 +129,10 @@ protected:
 	void ReleaseClip();
 
 	void SpawnProjectile();
+
+	void EquipOrSwap(AWeapon* WeaponToEquip);
+
+	void PlayEquipMontage(UAnimMontage* Montage);
 
 private:
 

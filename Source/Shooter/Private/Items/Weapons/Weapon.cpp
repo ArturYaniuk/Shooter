@@ -20,7 +20,8 @@ AWeapon::AWeapon() :
 	AmmoType(EAmmoType::EAT_9mm),
 	ReloadMontageSection(FName(TEXT("Reload"))),
 	ClipBoneName(TEXT("b_gun_mag")),
-	ProjectileType(EProjectileType::EPT_Default)
+	ProjectileType(EProjectileType::EPT_Default),
+	WeaponIsTemp(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -88,6 +89,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 		case EWeaponType::EWT_AssaultRifle:
 			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssaultRifle"), TEXT(""));
 			break;
+		case EWeaponType::EWT_TempWeapon:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("TempWeapon"), TEXT(""));
+			break;
 		}
 		if (WeaponDataRow)
 		{
@@ -115,6 +119,7 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			DamageMultiplier = WeaponDataRow->DamageMultiplier;
 			CritPointDamageMultiplier = WeaponDataRow->CritPointDamageMultiplier;
 			ProjectileType = WeaponDataRow->ProjectileType;
+			WeaponIsTemp = WeaponDataRow->WeaponIsTemp;
 		}
 	}
 
