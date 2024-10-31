@@ -14,6 +14,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Perception/PawnSensingComponent.h"
 #include "./Characters/ShooterCharacter.h"
+#include "./Characters/Enemy/FlyingEnemy.h"
+#include "NavigationData.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -253,6 +255,32 @@ void AEnemy::SetState(EEnemyState newState)
 	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
 	EnemyState = newState;
 	OnEnemyStateChange.Broadcast(EnemyState);
+}
+
+void AEnemy::TakeAmmo()
+{
+	SpawnCarry();
+}
+
+AFlyingEnemy* AEnemy::SpawnCarry()
+{
+	if (AmmoCarry) 
+	{
+
+		FVector position(SecondPatrolPoint.X, SecondPatrolPoint.Y, 800);
+		FRotator rotator(GetActorRotation());
+
+		
+
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.Owner = this;
+
+
+		GetWorld()->SpawnActor<AFlyingEnemy>(AmmoCarry, position, rotator, SpawnInfo);
+
+		
+	}
+	return nullptr;
 }
 
 

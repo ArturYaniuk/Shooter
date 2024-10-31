@@ -72,6 +72,11 @@ protected:
 	UFUNCTION()
 	void SetState(EEnemyState newState);
 
+	UFUNCTION(BlueprintCallable)
+	void TakeAmmo();
+
+	class AFlyingEnemy* SpawnCarry();
+
 
 
 private:
@@ -182,6 +187,9 @@ private:
 
 	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FOnEnemyStateChange OnEnemyStateChange;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AFlyingEnemy> AmmoCarry;
 
 
 	
