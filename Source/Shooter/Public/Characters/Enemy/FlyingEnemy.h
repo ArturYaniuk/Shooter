@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "items/Weapons/AmmoType.h"
 #include "FlyingEnemy.generated.h"
 
 UCLASS()
@@ -16,6 +18,8 @@ public:
 	AFlyingEnemy();
 	virtual void Tick(float DeltaTime) override;
 
+	void TakeParams(EEnemyAmmoType AmmoType);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -23,6 +27,15 @@ protected:
 
 private:
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleDefaultsOnly, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
+	UCapsuleComponent* CollisionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
+	EEnemyAmmoType AmmoType;
 };

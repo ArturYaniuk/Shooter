@@ -77,7 +77,12 @@ protected:
 
 	class AFlyingEnemy* SpawnCarry();
 
+	void InitializeAmmoMap();
 
+	void DecrementAmmo(EEnemyAmmoType AmmoType);
+
+	void StartSpawnAmmoCarryTimer();
+	void ResetSpawnAmmoCarryTimer();
 
 private:
 
@@ -158,6 +163,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	class UNiagaraSystem* MuzzleFlash;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AProjectile> ProjectileClass;
 
@@ -191,8 +197,25 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AFlyingEnemy> AmmoCarry;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 DefaultMainGunAmmo;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 DefaultRocketGunAmmo;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TMap<EEnemyAmmoType, int32> AmmoMap;
+
+	bool bAmmoCarryAlive;
+
+	FTimerHandle SpawnAmmoCarryTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float SpawnAmmoCarryMin;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float SpawnAmmoCarryMax;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -210,5 +233,6 @@ public:
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
 	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
+	FORCEINLINE void SetEnemyAmmo(EEnemyAmmoType AmmoType, float Amount) { AmmoMap[AmmoType] += Amount; }
 
 };
