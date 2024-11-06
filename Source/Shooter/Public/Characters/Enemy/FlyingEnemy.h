@@ -7,7 +7,11 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "items/Weapons/AmmoType.h"
+#include "EnemyState.h"
 #include "FlyingEnemy.generated.h"
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFlyingEnemyStateChange, EFlyingEnemyState, FlyingEnemyState);
 
 UCLASS()
 class SHOOTER_API AFlyingEnemy : public ACharacter
@@ -15,14 +19,26 @@ class SHOOTER_API AFlyingEnemy : public ACharacter
 	GENERATED_BODY()
 
 public:
+
 	AFlyingEnemy();
 	virtual void Tick(float DeltaTime) override;
 
 	void TakeParams(EEnemyAmmoType AmmoType);
 
+	UFUNCTION(BlueprintCallable)
+	void ReloadEnemy();
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	void Die();
+
+	void ChangeState(EFlyingEnemyState NewState);
+
 
 protected:
+
 	virtual void BeginPlay() override;
+
 
 
 private:
@@ -33,9 +49,23 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
 	EEnemyAmmoType AmmoType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
+	float Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
+	float MaxHealth;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = true))
+	bool bAlive;
+
+	FVector SpawnPoint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = true))
+	EFlyingEnemyState FlyingEnemyState;
+
+	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
+	FOnFlyingEnemyStateChange OnFlyingEnemyStateChange;
 };
