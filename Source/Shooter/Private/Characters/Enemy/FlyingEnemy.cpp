@@ -40,10 +40,35 @@ void AFlyingEnemy::Tick(float DeltaTime)
 
 }
 
-void AFlyingEnemy::TakeParams(EEnemyAmmoType SpawnAmmoType)
+void AFlyingEnemy::TakeParams(EEnemyAmmoType SpawnAmmoCarryType)
 {
+	const FString AmmoCaryTablePath{TEXT("/Script/Engine.DataTable'/Game/DataTable/AmmoCarryDataTable.AmmoCarryDataTable'")};
+
+	UDataTable* AmmoCarryTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *AmmoCaryTablePath));
+	if (AmmoCarryTableObject)
+	{
+		FAmmoCarryDataTable* AmmoCarryDataRow = nullptr;
+		switch (SpawnAmmoCarryType)
+		{
+		case EEnemyAmmoType::EEAT_MAX:
+			AmmoCarryDataRow = AmmoCarryTableObject->FindRow<FAmmoCarryDataTable>(FName("Default"), TEXT(""));
+			break;
+		case EEnemyAmmoType::EEAT_MainGun:
+			AmmoCarryDataRow = AmmoCarryTableObject->FindRow<FAmmoCarryDataTable>(FName("MainGun"), TEXT(""));
+			break;
+		case EEnemyAmmoType::EEAT_Rocket:
+			AmmoCarryDataRow = AmmoCarryTableObject->FindRow<FAmmoCarryDataTable>(FName("Rocket"), TEXT(""));
+			break;
+		default:
+			break;
+		}
+		if (AmmoCarryDataRow)
+		{
+			GetMesh()->SetSkeletalMesh(AmmoCarryDataRow->AmmoCarryMeshComponent);
+		}
+	}
 	ProjectileMovementComponent->HomingTargetComponent = GetOwner()->GetRootComponent();
-	AmmoType = SpawnAmmoType;
+	AmmoType = SpawnAmmoCarryType;
 	ChangeState(EFlyingEnemyState::EFES_MoveToTarget);
 }
 

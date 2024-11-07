@@ -7,11 +7,25 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "items/Weapons/AmmoType.h"
+#include "Engine/DataTable.h"
 #include "EnemyState.h"
 #include "FlyingEnemy.generated.h"
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFlyingEnemyStateChange, EFlyingEnemyState, FlyingEnemyState);
+
+USTRUCT()
+struct FAmmoCarryDataTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMesh* AmmoCarryMeshComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName AmmoSocketName;
+
+};
 
 UCLASS()
 class SHOOTER_API AFlyingEnemy : public ACharacter
