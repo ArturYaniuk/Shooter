@@ -9,11 +9,12 @@
 
 
 AFlyingEnemy::AFlyingEnemy() :
-	AmmoType(EEnemyAmmoType::EEAT_MAX),
+	AmmoType(EAmmoType::EAT_MAX),
 	Health(10.f),
 	MaxHealth(10.f),
 	bAlive(true),
-	FlyingEnemyState(EFlyingEnemyState::EFES_MAX)
+	FlyingEnemyState(EFlyingEnemyState::EFES_MAX),
+	AmmoSocketName("Default")
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -40,7 +41,7 @@ void AFlyingEnemy::Tick(float DeltaTime)
 
 }
 
-void AFlyingEnemy::TakeParams(EEnemyAmmoType SpawnAmmoCarryType)
+void AFlyingEnemy::TakeParams(EAmmoType SpawnAmmoCarryType)
 {
 	const FString AmmoCaryTablePath{TEXT("/Script/Engine.DataTable'/Game/DataTable/AmmoCarryDataTable.AmmoCarryDataTable'")};
 
@@ -50,13 +51,13 @@ void AFlyingEnemy::TakeParams(EEnemyAmmoType SpawnAmmoCarryType)
 		FAmmoCarryDataTable* AmmoCarryDataRow = nullptr;
 		switch (SpawnAmmoCarryType)
 		{
-		case EEnemyAmmoType::EEAT_MAX:
+		case EAmmoType::EAT_MAX:
 			AmmoCarryDataRow = AmmoCarryTableObject->FindRow<FAmmoCarryDataTable>(FName("Default"), TEXT(""));
 			break;
-		case EEnemyAmmoType::EEAT_MainGun:
+		case EAmmoType::EAT_MainGun:
 			AmmoCarryDataRow = AmmoCarryTableObject->FindRow<FAmmoCarryDataTable>(FName("MainGun"), TEXT(""));
 			break;
-		case EEnemyAmmoType::EEAT_Rocket:
+		case EAmmoType::EAT_Rocket:
 			AmmoCarryDataRow = AmmoCarryTableObject->FindRow<FAmmoCarryDataTable>(FName("Rocket"), TEXT(""));
 			break;
 		default:
@@ -65,19 +66,23 @@ void AFlyingEnemy::TakeParams(EEnemyAmmoType SpawnAmmoCarryType)
 		if (AmmoCarryDataRow)
 		{
 			GetMesh()->SetSkeletalMesh(AmmoCarryDataRow->AmmoCarryMeshComponent);
+			AmmoSocketName = AmmoCarryDataRow->AmmoSocketName;
 		}
 	}
 	ProjectileMovementComponent->HomingTargetComponent = GetOwner()->GetRootComponent();
 	AmmoType = SpawnAmmoCarryType;
 	ChangeState(EFlyingEnemyState::EFES_MoveToTarget);
+	
+	
 }
 
 void AFlyingEnemy::ReloadEnemy()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(1, 44, FColor::Green, TEXT("Start Reload"));
 	auto EnemyOwner = Cast<AEnemy>(GetOwner());
-	if (AmmoType != EEnemyAmmoType::EEAT_MAX)EnemyOwner->SetEnemyAmmo(AmmoType, 50);
+	if (AmmoType != EAmmoType::EAT_MAX)EnemyOwner->SetEnemyAmmo(AmmoType, 50);
 	ChangeState(EFlyingEnemyState::EFES_MoveHome);
+	
 
 }
 
@@ -102,6 +107,7 @@ void AFlyingEnemy::Die()
 	{
 		ChangeState(EFlyingEnemyState::EFES_Death);
 		bAlive = false;
+	
 		Destroy();
 	}
 
@@ -112,3 +118,4 @@ void AFlyingEnemy::ChangeState(EFlyingEnemyState NewState)
 	FlyingEnemyState = NewState;
 	OnFlyingEnemyStateChange.Broadcast(FlyingEnemyState);
 }
+

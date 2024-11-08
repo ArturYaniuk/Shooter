@@ -7,11 +7,10 @@
 #include "Components/SphereComponent.h"
 #include "Characters/ShooterCharacter.h"
 
-AAmmo::AAmmo()
+AAmmo::AAmmo():
+	AmmoType(EAmmoType::EAT_MAX)
 {
-	AmmoMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AmmoMesh"));
-	SetRootComponent(AmmoMesh);
-
+	RootComponent = GetItemMesh();
 	GetAreaSphere()->SetupAttachment(GetRootComponent());
 	GetPickupWidget()->SetupAttachment(GetRootComponent());
 
@@ -31,12 +30,13 @@ void AAmmo::BeginPlay()
 	Super::BeginPlay();
 
 	AmmoCollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AAmmo::AmmoSphereOverlap);
+
 }
 
 void AAmmo::SetItemProperties(EItemState State)
 {
 	Super::SetItemProperties(State);
-
+	AmmoMesh = GetItemMesh();
 	switch (State)
 	{
 	case EItemState::EIS_Pickup:
@@ -71,6 +71,43 @@ void AAmmo::SetItemProperties(EItemState State)
 	}
 }
 
+void AAmmo::TakeParams(EAmmoType NewAmmoType)
+{
+	const FString AmmoTablePath{ TEXT("/Script/Engine.DataTable'/Game/DataTable/AmmoDataTable.AmmoDataTable'") };
+
+	UDataTable* AmmoTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *AmmoTablePath));
+	if (AmmoTableObject)
+	{
+		FAmmoDataTable* AmmoDataRow = nullptr;
+		switch (NewAmmoType)
+		{
+		case EAmmoType::EAT_MAX:
+			AmmoDataRow = AmmoTableObject->FindRow<FAmmoDataTable>(FName("Default"), TEXT(""));
+			break;
+		case EAmmoType::EAT_MainGun:
+			AmmoDataRow = AmmoTableObject->FindRow<FAmmoDataTable>(FName("MainGun"), TEXT(""));
+			break;
+		case EAmmoType::EAT_Rocket:
+			AmmoDataRow = AmmoTableObject->FindRow<FAmmoDataTable>(FName("Rocket"), TEXT(""));
+			break;
+		case EAmmoType::EAT_9mm:
+			AmmoDataRow = AmmoTableObject->FindRow<FAmmoDataTable>(FName("9mm"), TEXT(""));
+			break;
+		case EAmmoType::EAT_AR:
+			AmmoDataRow = AmmoTableObject->FindRow<FAmmoDataTable>(FName("AR"), TEXT(""));
+			break;
+		default:
+			break;
+		}
+		if (AmmoDataRow)
+		{
+			GetItemMesh()->SetSkeletalMesh(AmmoDataRow->AmmoMeshComponent);
+			SetItemCount(AmmoDataRow->AmmoQuantity);
+		}
+	
+	}
+}
+
 void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {	
 	if (OtherActor)
@@ -81,4 +118,9 @@ void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 			ShooterCharacter->GetPickupItem(this);
 		}
 	}
+}
+
+void AAmmo::OnConstruction(const FTransform& Transform)
+{
+	TakeParams(AmmoType);
 }

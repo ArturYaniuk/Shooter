@@ -76,10 +76,12 @@ protected:
 	void TakeAmmo();
 
 	class AFlyingEnemy* SpawnCarry();
+	class AAmmo* SpawnAmmo(EAmmoType LocalAmmoType, AFlyingEnemy* ParentAmmoCarry);
+
 
 	void InitializeAmmoMap();
 
-	void DecrementAmmo(EEnemyAmmoType AmmoType);
+	void DecrementAmmo(EAmmoType AmmoType);
 
 	void StartSpawnAmmoCarryTimer();
 	void ResetSpawnAmmoCarryTimer();
@@ -204,7 +206,7 @@ private:
 	int32 DefaultRocketGunAmmo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
-	TMap<EEnemyAmmoType, int32> AmmoMap;
+	TMap<EAmmoType, int32> AmmoMap;
 
 	bool bAmmoCarryAlive;
 
@@ -215,6 +217,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float SpawnAmmoCarryMax;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AAmmo> CarriedAmmo;
 
 public:	
 	// Called every frame
@@ -233,6 +238,6 @@ public:
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
 	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
-	FORCEINLINE void SetEnemyAmmo(EEnemyAmmoType AmmoType, float Amount) { AmmoMap[AmmoType] += Amount; }
+	FORCEINLINE void SetEnemyAmmo(EAmmoType AmmoType, float Amount) { AmmoMap[AmmoType] += Amount; }
 
 };

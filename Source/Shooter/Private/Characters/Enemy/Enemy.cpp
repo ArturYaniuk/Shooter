@@ -206,9 +206,9 @@ void AEnemy::PlayAttackMontage(FName Section, float PlayRate, bool isAlive)
 
 void AEnemy::Attack()
 {
-	if (AmmoMap[EEnemyAmmoType::EEAT_MainGun] > 0)
+	if (AmmoMap[EAmmoType::EAT_MainGun] > 0)
 	{
-		DecrementAmmo(EEnemyAmmoType::EEAT_MainGun);
+		DecrementAmmo(EAmmoType::EAT_MainGun);
 		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
 		if (BarrelSocket)
 		{
@@ -293,20 +293,40 @@ AFlyingEnemy* AEnemy::SpawnCarry()
 		SpawnInfo.Instigator = GetInstigator();
 
 		AFlyingEnemy* FlyingEnemy = GetWorld()->SpawnActor<AFlyingEnemy>(AmmoCarry, position, rotator, SpawnInfo);
-		FlyingEnemy->TakeParams(EEnemyAmmoType::EEAT_MainGun);
+		FlyingEnemy->TakeParams(EAmmoType::EAT_MainGun);
 		StartSpawnAmmoCarryTimer();
 		
+		SpawnAmmo(EAmmoType::EAT_MainGun, FlyingEnemy);
 	}
+	return nullptr;
+}
+
+AAmmo* AEnemy::SpawnAmmo(EAmmoType LocalAmmoType , AFlyingEnemy* ParentAmmoCarry)
+{
+	FVector position(ParentAmmoCarry->GetMesh()->GetSocketLocation(ParentAmmoCarry->GetSocketName()));
+	FRotator rotator(GetActorRotation());
+
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Owner = this;
+	SpawnInfo.Instigator = GetInstigator();
+
+	AAmmo* Ammo = GetWorld()->SpawnActor<AAmmo>(CarriedAmmo, position, rotator, SpawnInfo);
+	Ammo->SetAmmoType(LocalAmmoType);
+
+	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
+	Ammo->AttachToComponent(ParentAmmoCarry->GetMesh(), TransformRules, ParentAmmoCarry->GetSocketName());
+
+
 	return nullptr;
 }
 
 void AEnemy::InitializeAmmoMap()
 {
-	AmmoMap.Add(EEnemyAmmoType::EEAT_MainGun, DefaultMainGunAmmo);
-	AmmoMap.Add(EEnemyAmmoType::EEAT_Rocket, DefaultRocketGunAmmo);
+	AmmoMap.Add(EAmmoType::EAT_MainGun, DefaultMainGunAmmo);
+	AmmoMap.Add(EAmmoType::EAT_Rocket, DefaultRocketGunAmmo);
 }
 
-void AEnemy::DecrementAmmo(EEnemyAmmoType AmmoType)
+void AEnemy::DecrementAmmo(EAmmoType AmmoType)
 {
 	if (AmmoMap[AmmoType] - 1 <= 0) AmmoMap[AmmoType] = 0;
 	else --AmmoMap[AmmoType];

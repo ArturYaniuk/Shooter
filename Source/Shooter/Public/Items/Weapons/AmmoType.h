@@ -5,6 +5,8 @@ enum class EAmmoType : uint8
 {
 	EAT_9mm UMETA(DisplayName = "9mm"),
 	EAT_AR UMETA(DisplayName = "Assault Rifle"),
+	EAT_MainGun UMETA(DisplayName = "MainGun"),
+	EAT_Rocket UMETA(DisplayName = "Rocket"),
 
 	EAT_MAX UMETA(DisplayName = "DefaultMax")
 };
@@ -18,14 +20,4 @@ enum class EProjectileType : uint8
 	EPT_Second UMETA(DisplayName = "Second"),
 	EPT_Something UMETA(DisplayName = "Someting")
 
-};
-
-
-UENUM(BlueprintType)
-enum class EEnemyAmmoType : uint8
-{
-	EEAT_MainGun UMETA(DisplayName = "MainGun"),
-	EEAT_Rocket UMETA(DisplayName = "Rocket"),
-
-	EEAT_MAX UMETA(DisplayName = "DefaultMax")
 };

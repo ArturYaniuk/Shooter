@@ -9,6 +9,7 @@
 #include "items/Weapons/AmmoType.h"
 #include "Engine/DataTable.h"
 #include "EnemyState.h"
+#include "items/Ammo.h"
 #include "FlyingEnemy.generated.h"
 
 
@@ -37,7 +38,7 @@ public:
 	AFlyingEnemy();
 	virtual void Tick(float DeltaTime) override;
 
-	void TakeParams(EEnemyAmmoType AmmoType);
+	void TakeParams(EAmmoType AmmoType);
 
 	UFUNCTION(BlueprintCallable)
 	void ReloadEnemy();
@@ -47,6 +48,7 @@ public:
 	void Die();
 
 	void ChangeState(EFlyingEnemyState NewState);
+
 
 
 protected:
@@ -64,7 +66,7 @@ private:
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
-	EEnemyAmmoType AmmoType;
+	EAmmoType AmmoType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
 	float Health;
@@ -82,4 +84,10 @@ private:
 
 	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FOnFlyingEnemyStateChange OnFlyingEnemyStateChange;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
+	FName AmmoSocketName;
+
+public:
+	FORCEINLINE FName GetSocketName() { return AmmoSocketName; }
 };
