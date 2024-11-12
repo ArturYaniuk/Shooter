@@ -310,7 +310,7 @@ AAmmo* AEnemy::SpawnAmmo(EAmmoType LocalAmmoType , AFlyingEnemy* ParentAmmoCarry
 	SpawnInfo.Owner = this;
 	SpawnInfo.Instigator = GetInstigator();
 
-	AAmmo* Ammo = GetWorld()->SpawnActor<AAmmo>(CarriedAmmo, position, rotator, SpawnInfo);
+	Ammo = GetWorld()->SpawnActor<AAmmo>(CarriedAmmo, position, rotator, SpawnInfo);
 	Ammo->SetAmmoType(LocalAmmoType);
 
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
@@ -342,6 +342,18 @@ void AEnemy::StartSpawnAmmoCarryTimer()
 void AEnemy::ResetSpawnAmmoCarryTimer()
 {
 	bAmmoCarryAlive = false;
+}
+
+void AEnemy::SetDeathFlyingEnemy(bool newbAmmoCarryAlive)
+{
+	bAmmoCarryAlive = newbAmmoCarryAlive;
+	
+	if (Ammo)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		Ammo->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		Ammo->SetItemState(EItemState::EIS_Falling);
+	}
 }
 
 

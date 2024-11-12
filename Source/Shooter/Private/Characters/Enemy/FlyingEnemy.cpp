@@ -32,6 +32,7 @@ void AFlyingEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	SpawnPoint = this->GetActorLocation();
+	EnemyOwner = Cast<AEnemy>(GetOwner());
 }
 
 
@@ -79,7 +80,7 @@ void AFlyingEnemy::TakeParams(EAmmoType SpawnAmmoCarryType)
 void AFlyingEnemy::ReloadEnemy()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(1, 44, FColor::Green, TEXT("Start Reload"));
-	auto EnemyOwner = Cast<AEnemy>(GetOwner());
+
 	if (AmmoType != EAmmoType::EAT_MAX)EnemyOwner->SetEnemyAmmo(AmmoType, 50);
 	ChangeState(EFlyingEnemyState::EFES_MoveHome);
 	
@@ -107,7 +108,7 @@ void AFlyingEnemy::Die()
 	{
 		ChangeState(EFlyingEnemyState::EFES_Death);
 		bAlive = false;
-	
+		EnemyOwner->SetDeathFlyingEnemy(bAlive);
 		Destroy();
 	}
 

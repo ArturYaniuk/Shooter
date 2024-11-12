@@ -88,6 +88,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
 	FName AmmoSocketName;
 
+	class AEnemy* EnemyOwner;
+
 public:
 	FORCEINLINE FName GetSocketName() { return AmmoSocketName; }
 };

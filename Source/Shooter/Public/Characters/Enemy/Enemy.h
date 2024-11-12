@@ -86,6 +86,7 @@ protected:
 	void StartSpawnAmmoCarryTimer();
 	void ResetSpawnAmmoCarryTimer();
 
+
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
@@ -221,6 +222,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AAmmo> CarriedAmmo;
 
+	AAmmo* Ammo;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -231,6 +234,7 @@ public:
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void SetDeathFlyingEnemy(bool newbAmmoCarryAlive);
 
 
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
