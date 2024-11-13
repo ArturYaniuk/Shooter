@@ -293,6 +293,7 @@ AFlyingEnemy* AEnemy::SpawnCarry()
 		SpawnInfo.Instigator = GetInstigator();
 
 		AFlyingEnemy* FlyingEnemy = GetWorld()->SpawnActor<AFlyingEnemy>(AmmoCarry, position, rotator, SpawnInfo);
+		
 		FlyingEnemy->TakeParams(EAmmoType::EAT_MainGun);
 		StartSpawnAmmoCarryTimer();
 		

@@ -49,6 +49,8 @@ public:
 
 	void ChangeState(EFlyingEnemyState NewState);
 
+	UFUNCTION(BlueprintCallable)
+	AEnemy* GetTarget() { return EnemyOwner; }
 
 
 protected:
@@ -61,9 +63,6 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
 	UCapsuleComponent* CollisionComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
-	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AmmoCarry, meta = (AllowPrivateAccess = "true"))
 	EAmmoType AmmoType;
@@ -90,6 +89,12 @@ private:
 
 	class AEnemy* EnemyOwner;
 
+	class AEnemyController* EnemyController;
+
+	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
+	class UBehaviorTree* BehaviorTree;
+
 public:
 	FORCEINLINE FName GetSocketName() { return AmmoSocketName; }
+	
 };

@@ -5,6 +5,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/WidgetComponent.h"
 #include "./Characters/Enemy/Enemy.h"
+#include "./Characters/Enemy/EnemyController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -17,15 +19,6 @@ AFlyingEnemy::AFlyingEnemy() :
 	AmmoSocketName("Default")
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
-	ProjectileMovementComponent->InitialSpeed = 300.f;
-	ProjectileMovementComponent->MaxSpeed = 300.f;
-	ProjectileMovementComponent->bRotationFollowsVelocity = true;
-	ProjectileMovementComponent->bIsHomingProjectile = true;
-	ProjectileMovementComponent->HomingAccelerationMagnitude = 300.f;
-	ProjectileMovementComponent->ProjectileGravityScale = 0.f;
-
 }
 
 void AFlyingEnemy::BeginPlay()
@@ -33,6 +26,9 @@ void AFlyingEnemy::BeginPlay()
 	Super::BeginPlay();
 	SpawnPoint = this->GetActorLocation();
 	EnemyOwner = Cast<AEnemy>(GetOwner());
+
+	EnemyController = Cast<AEnemyController>(GetController());
+
 }
 
 
@@ -70,18 +66,20 @@ void AFlyingEnemy::TakeParams(EAmmoType SpawnAmmoCarryType)
 			AmmoSocketName = AmmoCarryDataRow->AmmoSocketName;
 		}
 	}
-	ProjectileMovementComponent->HomingTargetComponent = GetOwner()->GetRootComponent();
 	AmmoType = SpawnAmmoCarryType;
 	ChangeState(EFlyingEnemyState::EFES_MoveToTarget);
-	
-	
+
+	if (EnemyController)
+	{
+		EnemyController->RunBehaviorTree(BehaviorTree);
+	}
 }
 
 void AFlyingEnemy::ReloadEnemy()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(1, 44, FColor::Green, TEXT("Start Reload"));
 
-	if (AmmoType != EAmmoType::EAT_MAX)EnemyOwner->SetEnemyAmmo(AmmoType, 50);
+	if (AmmoType != EAmmoType::EAT_MAX && EnemyOwner)EnemyOwner->SetEnemyAmmo(AmmoType, 50);
 	ChangeState(EFlyingEnemyState::EFES_MoveHome);
 	
 
