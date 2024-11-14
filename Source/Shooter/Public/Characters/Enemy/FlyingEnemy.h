@@ -49,9 +49,6 @@ public:
 
 	void ChangeState(EFlyingEnemyState NewState);
 
-	UFUNCTION(BlueprintCallable)
-	AEnemy* GetTarget() { return EnemyOwner; }
-
 
 protected:
 
@@ -84,10 +81,13 @@ private:
 	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FOnFlyingEnemyStateChange OnFlyingEnemyStateChange;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FName AmmoSocketName;
 
 	class AEnemy* EnemyOwner;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Target", meta = (AllowPrivateAccess = "true"))
+	AEnemy* EnemyReference;
 
 	class AEnemyController* EnemyController;
 
@@ -96,5 +96,6 @@ private:
 
 public:
 	FORCEINLINE FName GetSocketName() { return AmmoSocketName; }
+	FORCEINLINE void SetTarget(AEnemy* Target) { EnemyReference =  Target; }
 	
 };

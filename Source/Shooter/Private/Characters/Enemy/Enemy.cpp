@@ -295,6 +295,7 @@ AFlyingEnemy* AEnemy::SpawnCarry()
 		AFlyingEnemy* FlyingEnemy = GetWorld()->SpawnActor<AFlyingEnemy>(AmmoCarry, position, rotator, SpawnInfo);
 		
 		FlyingEnemy->TakeParams(EAmmoType::EAT_MainGun);
+		FlyingEnemy->SetTarget(this);
 		StartSpawnAmmoCarryTimer();
 		
 		SpawnAmmo(EAmmoType::EAT_MainGun, FlyingEnemy);
@@ -343,6 +344,12 @@ void AEnemy::StartSpawnAmmoCarryTimer()
 void AEnemy::ResetSpawnAmmoCarryTimer()
 {
 	bAmmoCarryAlive = false;
+}
+
+void AEnemy::SetEnemyAmmo(EAmmoType AmmoType, float Amount)
+{
+	AmmoMap[AmmoType] += Amount; 
+	Ammo->Destroy();
 }
 
 void AEnemy::SetDeathFlyingEnemy(bool newbAmmoCarryAlive)

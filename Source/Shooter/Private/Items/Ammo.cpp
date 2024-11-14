@@ -14,9 +14,8 @@ AAmmo::AAmmo():
 	GetAreaSphere()->SetupAttachment(GetRootComponent());
 	GetPickupWidget()->SetupAttachment(GetRootComponent());
 
-	AmmoCollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AmmoCollisionSphere"));
-	AmmoCollisionSphere->SetupAttachment(GetRootComponent());
-	AmmoCollisionSphere->SetSphereRadius(50.f);
+	GetAreaSphere()->SetupAttachment(GetRootComponent());
+	GetAreaSphere()->SetSphereRadius(50.f);
 
 }
 
@@ -29,7 +28,7 @@ void AAmmo::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AmmoCollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AAmmo::AmmoSphereOverlap);
+	GetAreaSphere()->OnComponentBeginOverlap.AddDynamic(this, &AAmmo::AmmoSphereOverlap);
 
 }
 

@@ -235,6 +235,7 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void SetDeathFlyingEnemy(bool newbAmmoCarryAlive);
+	void SetEnemyAmmo(EAmmoType AmmoType, float Amount);
 
 
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
@@ -242,6 +243,5 @@ public:
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
 	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
-	FORCEINLINE void SetEnemyAmmo(EAmmoType AmmoType, float Amount) { AmmoMap[AmmoType] += Amount; }
 
 };

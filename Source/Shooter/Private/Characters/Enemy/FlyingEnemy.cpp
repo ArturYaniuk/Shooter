@@ -25,10 +25,17 @@ void AFlyingEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	SpawnPoint = this->GetActorLocation();
-	EnemyOwner = Cast<AEnemy>(GetOwner());
-
 	EnemyController = Cast<AEnemyController>(GetController());
 
+	if (EnemyReference)
+	{
+		EnemyOwner = Cast<AEnemy>(EnemyReference);
+	}
+	if (EnemyController)
+	{
+		EnemyController->RunBehaviorTree(BehaviorTree);
+		EnemyController->GetBlackboardComponent()->SetValueAsObject("Target", EnemyReference);
+	}
 }
 
 
@@ -68,18 +75,13 @@ void AFlyingEnemy::TakeParams(EAmmoType SpawnAmmoCarryType)
 	}
 	AmmoType = SpawnAmmoCarryType;
 	ChangeState(EFlyingEnemyState::EFES_MoveToTarget);
-
-	if (EnemyController)
-	{
-		EnemyController->RunBehaviorTree(BehaviorTree);
-	}
 }
 
 void AFlyingEnemy::ReloadEnemy()
 {
 	if (GEngine) GEngine->AddOnScreenDebugMessage(1, 44, FColor::Green, TEXT("Start Reload"));
 
-	if (AmmoType != EAmmoType::EAT_MAX && EnemyOwner)EnemyOwner->SetEnemyAmmo(AmmoType, 50);
+	if (AmmoType != EAmmoType::EAT_MAX && EnemyReference)EnemyReference->SetEnemyAmmo(AmmoType, 50);
 	ChangeState(EFlyingEnemyState::EFES_MoveHome);
 	
 
