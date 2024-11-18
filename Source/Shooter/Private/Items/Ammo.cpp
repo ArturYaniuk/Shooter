@@ -6,9 +6,15 @@
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 #include "Characters/ShooterCharacter.h"
+#include "GameFramework/DamageType.h"
+#include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "NiagaraFunctionLibrary.h"
 
 AAmmo::AAmmo():
-	AmmoType(EAmmoType::EAT_MAX)
+	AmmoType(EAmmoType::EAT_MAX),
+	CanBlowUp(false)
 {
 	RootComponent = GetItemMesh();
 	GetAreaSphere()->SetupAttachment(GetRootComponent());
@@ -102,10 +108,22 @@ void AAmmo::TakeParams(EAmmoType NewAmmoType)
 		{
 			GetItemMesh()->SetSkeletalMesh(AmmoDataRow->AmmoMeshComponent);
 			SetItemCount(AmmoDataRow->AmmoQuantity);
+			CanBlowUp = AmmoDataRow->CanBlowUp;
+			Health = AmmoDataRow->Health;
+			MaxHealth = AmmoDataRow->MaxHealth;
+			BlowUpSound = AmmoDataRow->BlowUpSound;
+			BlowUpParticle = AmmoDataRow->BlowUpParticle;
 		}
 	
 	}
 }
+
+void AAmmo::BulletHit_Implementation(FHitResult HitResult)
+{
+	BlowUp();
+	
+}
+
 
 void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {	
@@ -122,4 +140,14 @@ void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 void AAmmo::OnConstruction(const FTransform& Transform)
 {
 	TakeParams(AmmoType);
+}
+
+void AAmmo::BlowUp()
+{
+	AController* MyOwnerInstgiator = this->GetInstigatorController();
+	if (BlowUpSound) UGameplayStatics::PlaySoundAtLocation(this, BlowUpSound, GetActorLocation());
+	if (BlowUpParticle) UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), BlowUpParticle, GetActorLocation());
+	UGameplayStatics::ApplyRadialDamage(this, 1000, GetActorLocation(), 1000, UDamageType::StaticClass(), TArray<AActor*>(), this, MyOwnerInstgiator);
+	
+	Destroy();
 }

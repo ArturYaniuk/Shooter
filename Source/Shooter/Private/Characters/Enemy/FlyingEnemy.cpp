@@ -106,6 +106,7 @@ void AFlyingEnemy::Die()
 {
 	if (bAlive)
 	{
+		EnemyOwner = Cast<AEnemy>(EnemyReference);
 		ChangeState(EFlyingEnemyState::EFES_Death);
 		bAlive = false;
 		EnemyOwner->SetDeathFlyingEnemy(bAlive);
