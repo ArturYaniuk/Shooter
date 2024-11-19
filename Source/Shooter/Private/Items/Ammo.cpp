@@ -50,7 +50,8 @@ void AAmmo::SetItemProperties(EItemState State)
 		AmmoMesh->SetVisibility(true);
 		AmmoMesh->SetEnableGravity(false);
 		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		AmmoMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
+		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 
 		break;
