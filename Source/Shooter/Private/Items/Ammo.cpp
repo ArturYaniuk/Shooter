@@ -50,9 +50,11 @@ void AAmmo::SetItemProperties(EItemState State)
 		AmmoMesh->SetVisibility(true);
 		AmmoMesh->SetEnableGravity(false);
 		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		AmmoMesh->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
-		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+		GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		GetAreaSphere()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 		break;
 	case EItemState::EIS_Equipped:
@@ -63,15 +65,22 @@ void AAmmo::SetItemProperties(EItemState State)
 		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+		GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		GetAreaSphere()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 		break;
 
 	case EItemState::EIS_Falling:
-
+		
 		AmmoMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		AmmoMesh->SetSimulatePhysics(true);
 		AmmoMesh->SetEnableGravity(true);
 		AmmoMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		AmmoMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+		GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		GetAreaSphere()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 		break;
 	}
@@ -119,23 +128,26 @@ void AAmmo::TakeParams(EAmmoType NewAmmoType)
 	}
 }
 
-void AAmmo::BulletHit_Implementation(FHitResult HitResult)
-{
-	BlowUp();
-	
-}
-
 
 void AAmmo::AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {	
 	if (OtherActor)
 	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 37, FColor::Green, TEXT("FirstOverlap"));
 		auto ShooterCharacter = Cast<AShooterCharacter>(OtherActor);
 		if (ShooterCharacter)
 		{
 			ShooterCharacter->GetPickupItem(this);
+			return;
+		}
+		auto Projectile = Cast<AProjectile>(OtherActor);
+		if (Projectile)
+		{
+			if ( Health - Projectile->GetDamage() <= 0)	BlowUp();
+			else Health -= Projectile->GetDamage();
 		}
 	}
+	
 }
 
 void AAmmo::OnConstruction(const FTransform& Transform)

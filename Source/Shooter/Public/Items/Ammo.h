@@ -40,7 +40,7 @@ struct FAmmoDataTable : public FTableRowBase
  * 
  */
 UCLASS()
-class SHOOTER_API AAmmo : public AItem, public IBulletHitInterface
+class SHOOTER_API AAmmo : public AItem
 {
 	GENERATED_BODY()
 	
@@ -50,11 +50,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void TakeParams(EAmmoType NewAmmoType);
-
-
-	virtual void BulletHit_Implementation(FHitResult HitResult) override;
-
-
 
 protected:
 	virtual void BeginPlay() override;

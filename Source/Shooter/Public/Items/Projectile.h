@@ -71,17 +71,15 @@ public:
 	// Sets default values for this actor's properties
 	AProjectile();
 
+	virtual void Tick(float DeltaTime) override;
+
+	void FireInDirection(const FVector& ShootDirection, EProjectileType Projectile, float DamageMultiplier, float CritDamageMultiplier);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void TakeSpawnProperties(EProjectileType ProjectileType, float DamageMultiplier, float CritDamageMultiplier);
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	void FireInDirection(const FVector& ShootDirection, EProjectileType Projectile, float DamageMultiplier, float CritDamageMultiplier);
 
 private:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile, meta = (AllowPrivateAccess = "true"))
@@ -144,4 +142,7 @@ private:
 	float WeaponCritDamageMultiplier;
 
 	FString CritBone;
+
+public:
+	FORCEINLINE float GetDamage() { return HitDamage; }
 };
