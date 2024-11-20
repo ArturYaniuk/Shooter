@@ -72,6 +72,19 @@ protected:
 	UFUNCTION()
 	void SetState(EEnemyState newState);
 
+	UFUNCTION(BlueprintCallable)
+	void TakeAmmo();
+
+	class AFlyingEnemy* SpawnCarry();
+	class AAmmo* SpawnAmmo(EAmmoType LocalAmmoType, AFlyingEnemy* ParentAmmoCarry);
+
+
+	void InitializeAmmoMap();
+
+	void DecrementAmmo(EAmmoType AmmoType);
+
+	void StartSpawnAmmoCarryTimer();
+	void ResetSpawnAmmoCarryTimer();
 
 
 private:
@@ -153,6 +166,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	class UNiagaraSystem* MuzzleFlash;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AProjectile> ProjectileClass;
 
@@ -183,8 +197,33 @@ private:
 	UPROPERTY(BlueprintAssignable, Category = Delegates, meta = (AllowPrivateAccess = "true"))
 	FOnEnemyStateChange OnEnemyStateChange;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AFlyingEnemy> AmmoCarry;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 DefaultMainGunAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 DefaultRocketGunAmmo;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+
+	bool bAmmoCarryAlive;
+
+	FTimerHandle SpawnAmmoCarryTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float SpawnAmmoCarryMin;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float SpawnAmmoCarryMax;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AAmmo> CarriedAmmo;
+
+	AAmmo* Ammo;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -195,6 +234,8 @@ public:
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void SetDeathFlyingEnemy(bool newbAmmoCarryAlive);
+	void SetEnemyAmmo(EAmmoType AmmoType, float Amount);
 
 
 	FORCEINLINE FString GetCritBone() const { return CritBone; }

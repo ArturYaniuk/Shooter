@@ -77,6 +77,7 @@ public:
 	FORCEINLINE void SetEquipSound(USoundCue* NewSound) { EquipSound = NewSound; }
 	FORCEINLINE void SetItemName(FString Name) { ItemName = Name; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+	FORCEINLINE void SetItemCount(int32 NewItemCount)  {  ItemCount = NewItemCount; }
 	FORCEINLINE int32 GetSlotIndex() const { return SlotIndex; }
 	FORCEINLINE void SetSlotIndex(int32 Index) { SlotIndex = Index; }
 	FORCEINLINE void SetCharacterInventoryFull(bool bFull) { bCharacterInventoryFull = bFull; }

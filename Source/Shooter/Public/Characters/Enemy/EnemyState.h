@@ -13,3 +13,15 @@ enum class EEnemyState : uint8
 	EES_MAX UMETA(DisplayName = "DefaultMax")
 };
 
+
+UENUM(BlueprintType)
+enum class EFlyingEnemyState : uint8
+{
+	EFES_Spawned UMETA(DisplayName = "Spawned"),
+	EFES_Death UMETA(DisplayName = "Death"),
+	EFES_MoveToTarget UMETA(DisplayName = "MoveToTarget"),
+	EFES_MoveHome UMETA(DisplayName = "MoveHome"),
+
+
+	EFES_MAX UMETA(DisplayName = "DefaultMax")
+};

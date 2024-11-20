@@ -14,6 +14,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Perception/PawnSensingComponent.h"
 #include "./Characters/ShooterCharacter.h"
+#include "./Characters/Enemy/FlyingEnemy.h"
+#include "NavigationData.h"
+#include "Items/Weapons/AmmoType.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -29,7 +32,12 @@ AEnemy::AEnemy() :
 	bShoudUseAnimOffset(false),
 	bSeePlayer(false),
 	EnemyState(EEnemyState::EES_Passive),
-	PreviousState(EnemyState)
+	PreviousState(EnemyState),
+	DefaultMainGunAmmo(5),
+	DefaultRocketGunAmmo(8),
+	bAmmoCarryAlive(false),
+	SpawnAmmoCarryMin(10),
+	SpawnAmmoCarryMax(20)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -46,6 +54,8 @@ AEnemy::AEnemy() :
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitializeAmmoMap();
 
 	CombatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::CombatRangeOverlap);
 	CombatRangeSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemy::CombatRangeEndOverlap);
@@ -77,6 +87,7 @@ void AEnemy::BeginPlay()
 	if (EnemyController) OnEnemyStateChange.Broadcast(EnemyState);
 
 	Target = Cast<AShooterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+
 }
 
 void AEnemy::Die()
@@ -195,26 +206,34 @@ void AEnemy::PlayAttackMontage(FName Section, float PlayRate, bool isAlive)
 
 void AEnemy::Attack()
 {
-	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-	if (BarrelSocket)
+	if (AmmoMap[EAmmoType::EAT_MainGun] > 0)
 	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
-
-		if (MuzzleFlash)
+		DecrementAmmo(EAmmoType::EAT_MainGun);
+		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+		if (BarrelSocket)
 		{
-			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlash, SocketTransform.GetLocation(), GetViewRotation());
+			const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
+			if (MuzzleFlash)
+			{
+				//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlash, SocketTransform.GetLocation(), GetViewRotation());
+			}
+
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator();
+
+			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), GetViewRotation(), SpawnParams);
+
+			if (Projectile) Projectile->FireInDirection(GetViewRotation().Vector(), ProjectileType, 1.0f, 1.5f);
+
 		}
-
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = GetInstigator();
-
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), GetViewRotation(), SpawnParams);
-
-		if (Projectile) Projectile->FireInDirection(GetViewRotation().Vector(), ProjectileType, 1.0f, 1.5f);
-
+	}
+	else
+	{
+		TakeAmmo();
 	}
 }
 
@@ -253,6 +272,96 @@ void AEnemy::SetState(EEnemyState newState)
 	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
 	EnemyState = newState;
 	OnEnemyStateChange.Broadcast(EnemyState);
+}
+
+void AEnemy::TakeAmmo()
+{
+	SpawnCarry();
+}
+
+AFlyingEnemy* AEnemy::SpawnCarry()
+{
+	if (AmmoCarry && !bAmmoCarryAlive) 
+	{
+		FVector position(SecondPatrolPoint.X, SecondPatrolPoint.Y, 800);
+		FRotator rotator(GetActorRotation());
+
+		
+
+		FActorSpawnParameters SpawnInfo;
+		SpawnInfo.Owner = this;
+		SpawnInfo.Instigator = GetInstigator();
+
+		AFlyingEnemy* FlyingEnemy = GetWorld()->SpawnActor<AFlyingEnemy>(AmmoCarry, position, rotator, SpawnInfo);
+		
+		FlyingEnemy->TakeParams(EAmmoType::EAT_MainGun);
+		FlyingEnemy->SetTarget(this);
+		StartSpawnAmmoCarryTimer();
+		
+		SpawnAmmo(EAmmoType::EAT_MainGun, FlyingEnemy);
+	}
+	return nullptr;
+}
+
+AAmmo* AEnemy::SpawnAmmo(EAmmoType LocalAmmoType , AFlyingEnemy* ParentAmmoCarry)
+{
+	FVector position(ParentAmmoCarry->GetMesh()->GetSocketLocation(ParentAmmoCarry->GetSocketName()));
+	FRotator rotator(GetActorRotation());
+
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Owner = this;
+	SpawnInfo.Instigator = GetInstigator();
+
+	Ammo = GetWorld()->SpawnActor<AAmmo>(CarriedAmmo, position, rotator, SpawnInfo);
+	Ammo->SetAmmoType(LocalAmmoType);
+
+	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget, true);
+	Ammo->AttachToComponent(ParentAmmoCarry->GetMesh(), TransformRules, ParentAmmoCarry->GetSocketName());
+
+
+	return nullptr;
+}
+
+void AEnemy::InitializeAmmoMap()
+{
+	AmmoMap.Add(EAmmoType::EAT_MainGun, DefaultMainGunAmmo);
+	AmmoMap.Add(EAmmoType::EAT_Rocket, DefaultRocketGunAmmo);
+}
+
+void AEnemy::DecrementAmmo(EAmmoType AmmoType)
+{
+	if (AmmoMap[AmmoType] - 1 <= 0) AmmoMap[AmmoType] = 0;
+	else --AmmoMap[AmmoType];
+}
+
+void AEnemy::StartSpawnAmmoCarryTimer()
+{
+	bAmmoCarryAlive = true;
+	const float SpawnAmmoCarryDelay{ FMath::FRandRange(SpawnAmmoCarryMin, SpawnAmmoCarryMax) };
+	GetWorldTimerManager().SetTimer(SpawnAmmoCarryTimer, this, &AEnemy::ResetSpawnAmmoCarryTimer, SpawnAmmoCarryDelay);
+}
+
+void AEnemy::ResetSpawnAmmoCarryTimer()
+{
+	bAmmoCarryAlive = false;
+}
+
+void AEnemy::SetEnemyAmmo(EAmmoType AmmoType, float Amount)
+{
+	AmmoMap[AmmoType] += Amount; 
+	Ammo->Destroy();
+}
+
+void AEnemy::SetDeathFlyingEnemy(bool newbAmmoCarryAlive)
+{
+	bAmmoCarryAlive = newbAmmoCarryAlive;
+	
+	if (Ammo)
+	{
+		FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		Ammo->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		Ammo->SetItemState(EItemState::EIS_Falling);
+	}
 }
 
 

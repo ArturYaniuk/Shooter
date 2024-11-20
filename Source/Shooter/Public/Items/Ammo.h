@@ -5,8 +5,37 @@
 #include "CoreMinimal.h"
 #include "Items/Item.h"
 #include "Weapons/AmmoType.h"
+#include "Engine/DataTable.h"
+#include "NiagaraComponent.h"
+#include "Characters/Enemy/BulletHitInterface.h"
 #include "Ammo.generated.h"
 
+USTRUCT()
+struct FAmmoDataTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMesh* AmmoMeshComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 AmmoQuantity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CanBlowUp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USoundCue* BlowUpSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UNiagaraSystem* BlowUpParticle;
+};
 /**
  * 
  */
@@ -20,6 +49,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	void TakeParams(EAmmoType NewAmmoType);
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -29,18 +60,37 @@ protected:
 	virtual void AmmoSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	void BlowUp();
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ammo", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* AmmoMesh;
+	USkeletalMeshComponent* AmmoMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo", meta = (AllowPrivateAccess = "true"))
 	EAmmoType AmmoType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly , Category = "Ammo", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo", meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* AmmoCollisionSphere;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AmmoBox", meta = (AllowPrivateAccess = "true"))
+	bool CanBlowUp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AmmoBox", meta = (AllowPrivateAccess = "true"))
+	float Health;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AmmoBox", meta = (AllowPrivateAccess = "true"))
+	float MaxHealth;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AmmoBox", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* BlowUpSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AmmoBox", meta = (AllowPrivateAccess = "true"))
+	class UNiagaraSystem* BlowUpParticle;
+
 public:
-	FORCEINLINE UStaticMeshComponent* GetAmmoMesh() const { return AmmoMesh; }
+	FORCEINLINE USkeletalMeshComponent* GetAmmoMesh() const { return AmmoMesh; }
 	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
+	FORCEINLINE void SetAmmoType(EAmmoType NewAmmoType) { AmmoType = NewAmmoType; TakeParams(AmmoType); }
 };
