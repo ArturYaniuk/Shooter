@@ -134,6 +134,7 @@ protected:
 
 	void PlayEquipMontage(UAnimMontage* Montage);
 
+
 private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -290,17 +291,12 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AProjectile> ProjectileClass;
-
-	//Character Health
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	float Health;
-
-	//Character Max Health
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	float MaxHealth;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FString CritBone;
+
+	UPROPERTY(VisibleAnywhere)
+	class UHealthComponent* HealthComponent;
 
 public:
 

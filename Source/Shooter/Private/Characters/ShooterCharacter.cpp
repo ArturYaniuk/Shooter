@@ -16,6 +16,7 @@
 #include "Characters/Enemy/Enemy.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
+#include "ActorComponents/HealthComponent.h"
 
 
 AShooterCharacter::AShooterCharacter() :
@@ -57,10 +58,7 @@ AShooterCharacter::AShooterCharacter() :
 	CharacterState(ECharacterState::ECS_Unequipped),
 	//Sounds
 	bShouldPlayEquipSound(true),
-	EquipSoundResetTime(0.2f),
-	//Character health
-	Health(100.f),
-	MaxHealth(100.f)
+	EquipSoundResetTime(0.2f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -75,19 +73,14 @@ AShooterCharacter::AShooterCharacter() :
 
 	//Create Hand Scene Component
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (Health - DamageAmount <= 0.f)
-	{
-		Health = 0.f;
-	}
-	else
-	{
-		Health -= DamageAmount;
-	}
-	return DamageAmount;
+	HealthComponent->ReceiveDamage(DamageAmount);
+	return 0.f;
 }
 
 void AShooterCharacter::BeginPlay()
