@@ -8,6 +8,8 @@
 #include "./Characters/Enemy/EnemyController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "ActorComponents/HealthComponent.h"
+
 
 
 AFlyingEnemy::AFlyingEnemy() :
@@ -19,6 +21,9 @@ AFlyingEnemy::AFlyingEnemy() :
 	AmmoSocketName("Default")
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
 }
 
 void AFlyingEnemy::BeginPlay()
@@ -89,15 +94,10 @@ void AFlyingEnemy::ReloadEnemy()
 
 float AFlyingEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (Health - DamageAmount < -0.f)
+	if (HealthComponent->IsAlive())
 	{
-		Health = 0.f;
-
-		if (bAlive) Die();
-	}
-	else
-	{
-		Health -= DamageAmount;
+		HealthComponent->ReceiveDamage(DamageAmount);
+		if (!HealthComponent->IsAlive()) Die();
 	}
 	return DamageAmount;
 }

@@ -17,18 +17,16 @@
 #include "./Characters/Enemy/FlyingEnemy.h"
 #include "NavigationData.h"
 #include "Items/Weapons/AmmoType.h"
+#include "ActorComponents/HealthComponent.h"
 
 // Sets default values
 AEnemy::AEnemy() :
-	Health(1000.f),
-	MaxHealth(1000.f),
 	bCanHitReact(true),
 	HitReactTimeMin(0.5f),
 	HitReactTimeMax(1.0f),
 	bStunned(false),
-	StunChance(0.5f),
+	StunChance(0.01f),
 	bInAttackRange(false),
-	bAlive(true),
 	bShoudUseAnimOffset(false),
 	bSeePlayer(false),
 	EnemyState(EEnemyState::EES_Passive),
@@ -42,11 +40,12 @@ AEnemy::AEnemy() :
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-
 	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRange"));
 	CombatRangeSphere->SetupAttachment(GetRootComponent());
 
 	PawnSensor = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 }
 
@@ -86,6 +85,8 @@ void AEnemy::BeginPlay()
 	}
 	if (EnemyController) OnEnemyStateChange.Broadcast(EnemyState);
 
+	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
+
 	Target = Cast<AShooterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
 
 }
@@ -110,7 +111,6 @@ void AEnemy::Die()
 
 	}
 	SetState(EEnemyState::EES_Death);
-	bAlive = false;
 	EnemyController->StopMovement();
 }
 
@@ -137,20 +137,20 @@ void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 
 void AEnemy::SetStunned(bool Stunned)
 {
-	bStunned = Stunned;
 	if (EnemyController)
 	{
 		EnemyController->StopMovement();
-		if (EnemyState != EEnemyState::EES_Stunned )  PreviousState = EnemyState;
-		SetState(EEnemyState::EES_Stunned);
-
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bStunned"), bStunned);
 		const float StunTime{ FMath::FRandRange(HitReactTimeMin, HitReactTimeMax) };
 
-		Delegate.BindUFunction(this, "SetState", PreviousState);
-
-		GetWorldTimerManager().SetTimer(StunTimer, Delegate, StunTime, false);
-		
+		GetWorldTimerManager().SetTimer(HitReactTimer, this, &AEnemy::ResetStun, StunTime);
 	}
+}
+
+void AEnemy::ResetStun()
+{
+	bStunned = false;
+	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bStunned"), bStunned);
 }
 
 
@@ -239,7 +239,7 @@ void AEnemy::Attack()
 
 void AEnemy::SeePlayer(APawn* Pawn)
 {
-	if (!bAlive || bStunned || EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("bAttacking"))) return;
+	if (!HealthComponent->IsAlive() || bStunned || EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("bAttacking"))) return;
 	EnemyController->MoveToActor(Target, 500.0f);
 	SetMoveToState();
 	if (bInAttackRange)
@@ -249,13 +249,6 @@ void AEnemy::SeePlayer(APawn* Pawn)
 	}
 	return;
 }
-
-void AEnemy::PostInitializeComponents()
-{
-	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
-	Super::PostInitializeComponents();
-}
-
 
 void AEnemy::SetMoveToState()
 {
@@ -268,9 +261,15 @@ void AEnemy::SetMoveToState()
 
 void AEnemy::SetState(EEnemyState newState)
 {
-	if (!bAlive) return;
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
-	EnemyState = newState;
+	if (HealthComponent->IsAlive())
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
+		EnemyState = newState;
+	}
+	else
+	{
+		EnemyState = EEnemyState::EES_Death;
+	}
 	OnEnemyStateChange.Broadcast(EnemyState);
 }
 
@@ -412,24 +411,19 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (Health - DamageAmount <- 0.f)
+
+	if (HealthComponent->IsAlive())
 	{
-		Health = 0.f;
-		
-		if (bAlive) Die();
-	}
-	else
-	{
-		Health -= DamageAmount;
+		HealthComponent->ReceiveDamage(DamageAmount);
+
 		const float Stunned = FMath::FRandRange(0.f, 1.f);
 
-		if (Stunned <= StunChance && bAlive)
+		if (Stunned <= StunChance)
 		{
 			PlayHitMontage(FName("HitReactFront"));
-			SetStunned(true);
+			SetStunned(bStunned = true);
 		}
-		
-	
+		if (!HealthComponent->IsAlive())	Die();
 	}
 	return DamageAmount;
 }

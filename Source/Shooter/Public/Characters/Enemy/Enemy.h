@@ -39,6 +39,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetStunned(bool Stunned);
 
+	void ResetStun();
+
 	UFUNCTION()
 	void CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
@@ -64,8 +66,6 @@ protected:
 
 	UFUNCTION()
 	void SeePlayer(APawn* pawn);
-
-	virtual void PostInitializeComponents() override;
 
 	void SetMoveToState();
 	
@@ -94,13 +94,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
 	class USoundCue* ImpactSound;
-
-	//Current Health of enemy
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
-	float Health;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
-	float MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class AExplosive* ExplosiveSlot;
@@ -159,9 +152,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FName DeathB;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	bool bAlive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	class UNiagaraSystem* MuzzleFlash;
@@ -223,6 +213,9 @@ private:
 	TSubclassOf<AAmmo> CarriedAmmo;
 
 	AAmmo* Ammo;
+
+	UPROPERTY(VisibleAnywhere)
+	class UHealthComponent* HealthComponent;
 
 public:	
 	// Called every frame

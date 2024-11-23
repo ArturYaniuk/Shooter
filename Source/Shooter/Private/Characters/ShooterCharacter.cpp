@@ -80,7 +80,11 @@ AShooterCharacter::AShooterCharacter() :
 float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	HealthComponent->ReceiveDamage(DamageAmount);
-	return 0.f;
+	if (!HealthComponent->IsAlive())
+	{
+		//TODO: Player death
+	}
+	return DamageAmount;
 }
 
 void AShooterCharacter::BeginPlay()
@@ -539,7 +543,7 @@ void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 
 bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
 {
-	FVector2D ViewportSize;
+	FVector2D ViewportSize{};
 	if (GEngine && GEngine->GameViewport)
 	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
