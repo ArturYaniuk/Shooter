@@ -156,10 +156,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	class UNiagaraSystem* MuzzleFlash;
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class AProjectile> ProjectileClass;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EProjectileType ProjectileType;
 
@@ -216,6 +212,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class UAttackComponent* AttackComponent;
 
 public:	
 	// Called every frame

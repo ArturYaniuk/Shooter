@@ -17,6 +17,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Items/Ammo.h"
 #include "ActorComponents/HealthComponent.h"
+#include "ActorComponents/AttackComponent.h"
 
 
 AShooterCharacter::AShooterCharacter() :
@@ -75,6 +76,8 @@ AShooterCharacter::AShooterCharacter() :
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	AttackComponent = CreateDefaultSubobject<UAttackComponent>(TEXT("Attack Component"));
 }
 
 float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -269,7 +272,15 @@ void AShooterCharacter::FireWeapon()
 	if (WeaponHasAmmo(EquippedWeapon))
 	{
 		PlayFireSound();
-		SpawnProjectile();
+		AttackComponent->SpawnProjectile(
+			EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket"),
+			EquippedWeapon->GetItemMesh(),
+			EquippedWeapon->GetMuzzleFash(),
+			GetViewRotation().Vector(),
+			EquippedWeapon->GetProjectileType(),
+			EquippedWeapon->GetDamageMultiplier(),
+			EquippedWeapon->GetCritPointDamageMultiplier());
+
 		PlayGunFireMontage();
 		EquippedWeapon->DecrementAmmo();
 
@@ -722,35 +733,6 @@ void AShooterCharacter::GrabClip()
 void AShooterCharacter::ReleaseClip()
 {
 	EquippedWeapon->SetMovingClip(false);
-}
-
-void AShooterCharacter::SpawnProjectile()
-{
-	// Send bullet
-	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName("BarrelSocket");
-	if (BarrelSocket)
-	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
-
-		if (EquippedWeapon->GetMuzzleFash())
-		{
-			//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform.GetLocation(), this->GetViewRotation());
-		}
-
-	//	FHitResult BeamHitResult;
-
-	//	bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = GetInstigator();
-
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), this->GetViewRotation(), SpawnParams);
-
-		if (Projectile) Projectile->FireInDirection(this->GetViewRotation().Vector(), EquippedWeapon->GetProjectileType(), EquippedWeapon->GetDamageMultiplier(), EquippedWeapon->GetCritPointDamageMultiplier());
-				
-	}
 }
 
 void AShooterCharacter::EquipOrSwap(AWeapon* WeaponToEquip)

@@ -128,8 +128,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseClip();
 
-	void SpawnProjectile();
-
 	void EquipOrSwap(AWeapon* WeaponToEquip);
 
 	void PlayEquipMontage(UAnimMontage* Montage);
@@ -297,6 +295,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class UAttackComponent* AttackComponent;
 
 public:
 

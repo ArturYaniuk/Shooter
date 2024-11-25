@@ -18,6 +18,7 @@
 #include "NavigationData.h"
 #include "Items/Weapons/AmmoType.h"
 #include "ActorComponents/HealthComponent.h"
+#include "ActorComponents/AttackComponent.h"
 
 // Sets default values
 AEnemy::AEnemy() :
@@ -46,6 +47,8 @@ AEnemy::AEnemy() :
 	PawnSensor = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	AttackComponent = CreateDefaultSubobject<UAttackComponent>(TEXT("Attack Component"));
+
 
 }
 
@@ -149,7 +152,7 @@ void AEnemy::SetStunned(bool Stunned)
 
 void AEnemy::ResetStun()
 {
-	bStunned = false;
+	bStunned = false; 
 	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bStunned"), bStunned);
 }
 
@@ -209,27 +212,14 @@ void AEnemy::Attack()
 	if (AmmoMap[EAmmoType::EAT_MainGun] > 0)
 	{
 		DecrementAmmo(EAmmoType::EAT_MainGun);
-		const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
-		if (BarrelSocket)
-		{
-			const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
 
-			if (MuzzleFlash)
-			{
-				//(GetWorld(), EquippedWeapon->GetMuzzleFash(), SocketTransform);
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MuzzleFlash, SocketTransform.GetLocation(), GetViewRotation());
-			}
-
-
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-
-			AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, SocketTransform.GetLocation(), GetViewRotation(), SpawnParams);
-
-			if (Projectile) Projectile->FireInDirection(GetViewRotation().Vector(), ProjectileType, 1.0f, 1.5f);
-
-		}
+		AttackComponent->SpawnProjectile(
+			GetMesh()->GetSocketByName("BarrelSocket"),
+			GetMesh(),
+			MuzzleFlash,
+			GetActorForwardVector(),
+			ProjectileType,
+			1.0f, 1.5f);
 	}
 	else
 	{
