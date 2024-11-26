@@ -211,13 +211,14 @@ void AEnemy::Attack()
 {
 	if (AmmoMap[EAmmoType::EAT_MainGun] > 0)
 	{
+
 		DecrementAmmo(EAmmoType::EAT_MainGun);
 
 		AttackComponent->SpawnProjectile(
 			GetMesh()->GetSocketByName("BarrelSocket"),
 			GetMesh(),
 			MuzzleFlash,
-			GetActorForwardVector(),
+			UKismetMathLibrary::GetDirectionUnitVector(GetMesh()->GetSocketByName("BarrelSocket")->GetSocketLocation(GetMesh()), Target->GetActorLocation()),
 			ProjectileType,
 			1.0f, 1.5f);
 	}
