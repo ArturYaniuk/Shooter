@@ -11,7 +11,7 @@
 #include "NiagaraComponent.h"
 #include "items/Projectile.h"
 #include "items/Weapons/AmmoType.h"
-#include "Perception/PawnSensingComponent.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "EnemyState.h"
 #include "Enemy.generated.h"
 
@@ -165,8 +165,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bSeePlayer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Awareness, meta = (AllowPrivateAccess = "true"))
-	class UPawnSensingComponent* PawnSensor;
+	class UAIPerceptionStimuliSourceComponent* StimulusSourse;
+
+	void SetupStimulusSource();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PlayerPoint;

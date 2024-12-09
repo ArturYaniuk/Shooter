@@ -12,7 +12,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Perception/PawnSensingComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 #include "./Characters/ShooterCharacter.h"
 #include "./Characters/Enemy/FlyingEnemy.h"
 #include "NavigationData.h"
@@ -44,12 +45,12 @@ AEnemy::AEnemy() :
 	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRange"));
 	CombatRangeSphere->SetupAttachment(GetRootComponent());
 
-	PawnSensor = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("Pawn Sensor"));
+
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	AttackComponent = CreateDefaultSubobject<UAttackComponent>(TEXT("Attack Component"));
 
-
+	SetupStimulusSource();
 }
 
 // Called when the game starts or when spawned
@@ -88,7 +89,6 @@ void AEnemy::BeginPlay()
 	}
 	if (EnemyController) OnEnemyStateChange.Broadcast(EnemyState);
 
-	PawnSensor->OnSeePawn.AddDynamic(this, &AEnemy::SeePlayer);
 
 	Target = Cast<AShooterCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
 
@@ -218,7 +218,7 @@ void AEnemy::Attack()
 			GetMesh()->GetSocketByName("BarrelSocket"),
 			GetMesh(),
 			MuzzleFlash,
-			UKismetMathLibrary::GetDirectionUnitVector(GetMesh()->GetSocketByName("BarrelSocket")->GetSocketLocation(GetMesh()), Target->GetActorLocation()),
+			UKismetMathLibrary::GetDirectionUnitVector(GetMesh()->GetSocketLocation("BarrelSocket"), Target->GetActorLocation()),
 			ProjectileType,
 			1.0f, 1.5f);
 	}
@@ -245,8 +245,6 @@ void AEnemy::SetMoveToState()
 {
 	if (Target == nullptr) return;
 	EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Target->GetActorLocation());
-	EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Target);
-	EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
 	SetState(EEnemyState::EES_MoveToTarget);
 }
 
@@ -254,7 +252,6 @@ void AEnemy::SetState(EEnemyState newState)
 {
 	if (HealthComponent->IsAlive())
 	{
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), bSeePlayer);
 		EnemyState = newState;
 	}
 	else
@@ -361,12 +358,21 @@ void AEnemy::ResetHitReactTimer()
 	bCanHitReact = true;
 }
 
+void AEnemy::SetupStimulusSource()
+{
+	StimulusSourse = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimuls"));
+	if (StimulusSourse)
+	{
+		StimulusSourse->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSourse->RegisterWithPerceptionSystem();
+	}
+}
+
 // Called every frame
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Target != nullptr)	bSeePlayer = PawnSensor->HasLineOfSightTo(Target);
 //	if (!bSeePlayer && EnemyState != EEnemyState::EES_Searching && EnemyState != EEnemyState::EES_MoveToTarget && EnemyState != EEnemyState::EES_Attacking) SetState(EEnemyState::EES_Passive);
 	if (!bSeePlayer && (EnemyState == EEnemyState::EES_MoveToTarget || EnemyState == EEnemyState::EES_Attacking || EnemyState == EEnemyState::EES_Stunned))
 	{
