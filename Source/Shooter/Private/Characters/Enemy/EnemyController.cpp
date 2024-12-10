@@ -19,6 +19,8 @@ AEnemyController::AEnemyController()
 
 
 	SetupPerceptionSystem();
+
+
 }
 
 void AEnemyController::OnPossess(APawn* InPawn)
@@ -27,8 +29,8 @@ void AEnemyController::OnPossess(APawn* InPawn)
 
 	if (InPawn == nullptr) return;
 
+	Enemy = Cast<AEnemy>(InPawn);
 	
-	AEnemy* Enemy = Cast<AEnemy>(InPawn);
 	if (Enemy)
 	{
 		if (Enemy->GetBehaviorTree())
@@ -54,7 +56,7 @@ void AEnemyController::SetupPerceptionSystem()
 		SightConfig->LoseSightRadius = SightConfig->SightRadius + 25.F;
 		SightConfig->PeripheralVisionAngleDegrees = 90.F;
 		SightConfig->SetMaxAge(
-			5.F); // seconds - perceived stimulus forgotten after this time
+			1.F); // seconds - perceived stimulus forgotten after this time
 		SightConfig->AutoSuccessRangeFromLastSeenLocation = 1520.F;
 		SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 		SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
@@ -73,7 +75,24 @@ void AEnemyController::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulu
 	{
 		GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), Stimulus.WasSuccessfullySensed());
 		GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Target);
+		if (Stimulus.WasSuccessfullySensed())
+		{
+			Enemy->SetState(EEnemyState::EES_MoveToTarget);
+			MoveToActor(Target, 500.f);
+			if (GetBlackboardComponent()->GetValueAsBool(TEXT("InAttackRange")))
+			{
+				StopMovement();
 		
+				Enemy->SetState(EEnemyState::EES_Attacking);
+			}
+		}
+		else
+		{
+			StopMovement();
+			GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Target->GetActorLocation());
+			Enemy->SetState(EEnemyState::EES_Searching);		
+			GetBlackboardComponent()->SetValueAsBool(TEXT("bAttacking"), false);
+			Enemy->StopAnimMontage();
+		}
 	}
 }
-// TODO: move enemy control logic ti enemy controller

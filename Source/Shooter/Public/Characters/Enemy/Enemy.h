@@ -64,14 +64,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Attack();
 
-	UFUNCTION()
-	void SeePlayer(APawn* pawn);
-
-	void SetMoveToState();
-	
-	UFUNCTION()
-	void SetState(EEnemyState newState);
-
 	UFUNCTION(BlueprintCallable)
 	void TakeAmmo();
 
@@ -226,6 +218,9 @@ public:
 
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 
+	UFUNCTION()
+	void SetState(EEnemyState newState);
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void SetDeathFlyingEnemy(bool newbAmmoCarryAlive);
 	void SetEnemyAmmo(EAmmoType AmmoType, float Amount);
@@ -234,7 +229,6 @@ public:
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
-	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
 
 };

@@ -23,6 +23,8 @@ public:
 
 private:
 
+	class AEnemy* Enemy;
+
 	UPROPERTY(BlueprintReadWrite, Category = "AI Behavior", meta = (AllowPrivateAccess = "true"))
 	class UBlackboardComponent* BlackboardComponent;
 

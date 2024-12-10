@@ -188,7 +188,7 @@ void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), bInAttackRange);
 		}
 		SetState(EEnemyState::EES_MoveToTarget);
-		SetMoveToState();
+		if (Target)	EnemyController->MoveToActor(Target, 500.f);
 	}
 }
 
@@ -226,26 +226,6 @@ void AEnemy::Attack()
 	{
 		TakeAmmo();
 	}
-}
-
-void AEnemy::SeePlayer(APawn* Pawn)
-{
-	if (!HealthComponent->IsAlive() || bStunned || EnemyController->GetBlackboardComponent()->GetValueAsBool(TEXT("bAttacking"))) return;
-	EnemyController->MoveToActor(Target, 500.0f);
-	SetMoveToState();
-	if (bInAttackRange)
-	{
-		EnemyController->StopMovement();
-		SetState(EEnemyState::EES_Attacking);
-	}
-	return;
-}
-
-void AEnemy::SetMoveToState()
-{
-	if (Target == nullptr) return;
-	EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("TargetPoint"), Target->GetActorLocation());
-	SetState(EEnemyState::EES_MoveToTarget);
 }
 
 void AEnemy::SetState(EEnemyState newState)
@@ -372,14 +352,6 @@ void AEnemy::SetupStimulusSource()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-//	if (!bSeePlayer && EnemyState != EEnemyState::EES_Searching && EnemyState != EEnemyState::EES_MoveToTarget && EnemyState != EEnemyState::EES_Attacking) SetState(EEnemyState::EES_Passive);
-	if (!bSeePlayer && (EnemyState == EEnemyState::EES_MoveToTarget || EnemyState == EEnemyState::EES_Attacking || EnemyState == EEnemyState::EES_Stunned))
-	{
-		SetState(EEnemyState::EES_Searching);
-		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("bAttacking"), false);
-		StopAnimMontage();
-	}
 }
 
 // Called to bind functionality to input
