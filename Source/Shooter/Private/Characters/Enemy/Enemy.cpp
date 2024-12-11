@@ -188,7 +188,7 @@ void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 			EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("InAttackRange"), bInAttackRange);
 		}
 		SetState(EEnemyState::EES_MoveToTarget);
-		if (Target)	EnemyController->MoveToActor(Target, 500.f);
+		EnemyController->MoveToActor(Target, 500.f);
 	}
 }
 
