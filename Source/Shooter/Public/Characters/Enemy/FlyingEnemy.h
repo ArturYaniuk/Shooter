@@ -94,6 +94,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
 
+	UPROPERTY(VisibleAnywhere)
+	class UHealthComponent* HealthComponent;
+
 public:
 	FORCEINLINE FName GetSocketName() { return AmmoSocketName; }
 	FORCEINLINE void SetTarget(AEnemy* Target) { EnemyReference =  Target; }

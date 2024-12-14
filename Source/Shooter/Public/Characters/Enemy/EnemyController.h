@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "AIController.h"
+
 #include "EnemyController.generated.h"
 
 /**
@@ -21,11 +23,20 @@ public:
 
 private:
 
+	class AEnemy* Enemy;
+
 	UPROPERTY(BlueprintReadWrite, Category = "AI Behavior", meta = (AllowPrivateAccess = "true"))
 	class UBlackboardComponent* BlackboardComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category = "AI Behavior", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTreeComponent* BehaviorTreeComponent;
+
+	class UAISenseConfig_Sight* SightConfig;
+
+	void SetupPerceptionSystem();
+
+	UFUNCTION()
+	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
 
 public:
 

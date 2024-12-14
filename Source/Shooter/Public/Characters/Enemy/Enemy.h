@@ -11,7 +11,7 @@
 #include "NiagaraComponent.h"
 #include "items/Projectile.h"
 #include "items/Weapons/AmmoType.h"
-#include "Perception/PawnSensingComponent.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "EnemyState.h"
 #include "Enemy.generated.h"
 
@@ -39,6 +39,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetStunned(bool Stunned);
 
+	void ResetStun();
+
 	UFUNCTION()
 	void CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
@@ -62,16 +64,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Attack();
 
-	UFUNCTION()
-	void SeePlayer(APawn* pawn);
-
-	virtual void PostInitializeComponents() override;
-
-	void SetMoveToState();
-	
-	UFUNCTION()
-	void SetState(EEnemyState newState);
-
 	UFUNCTION(BlueprintCallable)
 	void TakeAmmo();
 
@@ -94,13 +86,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
 	class USoundCue* ImpactSound;
-
-	//Current Health of enemy
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
-	float Health;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = true))
-	float MaxHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class AExplosive* ExplosiveSlot;
@@ -160,15 +145,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FName DeathB;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	bool bAlive;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	class UNiagaraSystem* MuzzleFlash;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class AProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
 	EProjectileType ProjectileType;
@@ -179,8 +157,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bSeePlayer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Awareness, meta = (AllowPrivateAccess = "true"))
-	class UPawnSensingComponent* PawnSensor;
+	class UAIPerceptionStimuliSourceComponent* StimulusSourse;
+
+	void SetupStimulusSource();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PlayerPoint;
@@ -224,6 +203,12 @@ private:
 
 	AAmmo* Ammo;
 
+	UPROPERTY(VisibleAnywhere)
+	class UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class UAttackComponent* AttackComponent;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -233,6 +218,9 @@ public:
 
 	virtual void BulletHit_Implementation(FHitResult HitResult) override;
 
+	UFUNCTION()
+	void SetState(EEnemyState newState);
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void SetDeathFlyingEnemy(bool newbAmmoCarryAlive);
 	void SetEnemyAmmo(EAmmoType AmmoType, float Amount);
@@ -241,7 +229,6 @@ public:
 	FORCEINLINE FString GetCritBone() const { return CritBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 	FORCEINLINE bool GetBShoudUseAnimOffset() { return bShoudUseAnimOffset; }
-	FORCEINLINE void SetEnemyState(EEnemyState State) { EnemyState = State; }
 	FORCEINLINE bool GetSeePlayer() const { return bSeePlayer; }
 
 };

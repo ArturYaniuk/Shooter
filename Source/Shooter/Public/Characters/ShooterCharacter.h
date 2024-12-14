@@ -128,11 +128,10 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ReleaseClip();
 
-	void SpawnProjectile();
-
 	void EquipOrSwap(AWeapon* WeaponToEquip);
 
 	void PlayEquipMontage(UAnimMontage* Montage);
+
 
 private:
 
@@ -290,17 +289,15 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class AProjectile> ProjectileClass;
-
-	//Character Health
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	float Health;
-
-	//Character Max Health
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	float MaxHealth;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	FString CritBone;
+
+	UPROPERTY(VisibleAnywhere)
+	class UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	class UAttackComponent* AttackComponent;
 
 public:
 

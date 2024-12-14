@@ -47,8 +47,8 @@ void UEnemyAnimInstance::TurnInPlace()
 
 	Pitch = Enemy->GetBaseAimRotation().Pitch;
 
-	if (GEngine) GEngine->AddOnScreenDebugMessage(1, -1, FColor::Cyan, FString::Printf(TEXT("Enemy->GetActorRotation().Yaw: %f"), Enemy->GetActorRotation().Yaw));
-	if (GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Cyan, FString::Printf(TEXT("Enemy->GetBaseAimRotation().Pitch: %f"), Enemy->GetBaseAimRotation().Pitch));
+//	if (GEngine) GEngine->AddOnScreenDebugMessage(1, -1, FColor::Cyan, FString::Printf(TEXT("Enemy->GetActorRotation().Yaw: %f"), Enemy->GetActorRotation().Yaw));
+//	if (GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Cyan, FString::Printf(TEXT("Enemy->GetBaseAimRotation().Pitch: %f"), Enemy->GetBaseAimRotation().Pitch));
 
 	if (Speed > 0)
 	{
@@ -63,7 +63,7 @@ void UEnemyAnimInstance::TurnInPlace()
 		EnemyYawLastFrame = EnemyYaw;
 		EnemyYaw = Enemy->GetActorRotation().Yaw;
 		const float YawDelta{ EnemyYaw - EnemyYawLastFrame };
-		if (GEngine) GEngine->AddOnScreenDebugMessage(8, -1, FColor::Cyan, FString::Printf(TEXT("YawDelta: %f"), YawDelta));
+	//	if (GEngine) GEngine->AddOnScreenDebugMessage(8, -1, FColor::Cyan, FString::Printf(TEXT("YawDelta: %f"), YawDelta));
 		RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - YawDelta);
 
 		const float Turning{ GetCurveValue(TEXT("Turning")) };
@@ -76,10 +76,10 @@ void UEnemyAnimInstance::TurnInPlace()
 
 			RootYawOffset > 0 ? RootYawOffset -= DeltaRotation : RootYawOffset += DeltaRotation;
 
-			if (GEngine) GEngine->AddOnScreenDebugMessage(3, -1, FColor::Cyan, FString::Printf(TEXT("DeltaRotation: %f"), DeltaRotation));
-			if (GEngine) GEngine->AddOnScreenDebugMessage(4, -1, FColor::Blue, FString::Printf(TEXT("RotationCurve: %f"), RotationCurve));
+	//		if (GEngine) GEngine->AddOnScreenDebugMessage(3, -1, FColor::Cyan, FString::Printf(TEXT("DeltaRotation: %f"), DeltaRotation));
+	//		if (GEngine) GEngine->AddOnScreenDebugMessage(4, -1, FColor::Blue, FString::Printf(TEXT("RotationCurve: %f"), RotationCurve));
 
-			if (GEngine) GEngine->AddOnScreenDebugMessage(5, -1, FColor::Green, FString::Printf(TEXT("RotationCurveLastFrame: %f"), RotationCurveLastFrame));
+	//		if (GEngine) GEngine->AddOnScreenDebugMessage(5, -1, FColor::Green, FString::Printf(TEXT("RotationCurveLastFrame: %f"), RotationCurveLastFrame));
 
 
 			const float ABSRootYawOffset{ FMath::Abs(RootYawOffset) };
@@ -90,6 +90,6 @@ void UEnemyAnimInstance::TurnInPlace()
 				RootYawOffset > 0 ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
 			}
 		}
-		if (GEngine) GEngine->AddOnScreenDebugMessage(6, -1, FColor::Cyan, FString::Printf(TEXT("RootYawOffset: %f"), RootYawOffset));
+//		if (GEngine) GEngine->AddOnScreenDebugMessage(6, -1, FColor::Cyan, FString::Printf(TEXT("RootYawOffset: %f"), RootYawOffset));
 	}
 }
